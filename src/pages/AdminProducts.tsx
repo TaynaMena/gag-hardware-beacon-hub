@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Layout } from '@/components/Layout';
+import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -123,10 +122,23 @@ const AdminProducts = () => {
     }
   });
   
-  // Update product
+  // Update product - Fix the type issue here
   const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: any }) => 
-      updateProduct(id, updates),
+    mutationFn: ({ id, updates }: { id: string; updates: any }) => {
+      // Ensure all required fields are present
+      if (updates && typeof updates === 'object') {
+        // Make sure name is always provided as it's required by NewProduct type
+        const validUpdates = {
+          name: updates.name || '',  // Default to empty string if missing
+          category: updates.category as ProductCategory,
+          description: updates.description || '',
+          stock: updates.stock ?? 0,
+          image_url: updates.image_url
+        };
+        return updateProduct(id, validUpdates);
+      }
+      throw new Error('Invalid update data');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Produto atualizado com sucesso!');
