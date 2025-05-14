@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/AdminLayout';
@@ -14,6 +14,7 @@ import { useProductsUpload } from '@/hooks/useProductsUpload';
 import { productSchema, ProductFormData } from '@/schemas/productFormSchema';
 import ProductFormFields from '@/components/admin/ProductFormFields';
 import ProductImageUpload from '@/components/admin/ProductImageUpload';
+import { ProductCategory } from '@/types/Product';
 
 const ProductForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +31,7 @@ const ProductForm = () => {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
-      category: undefined,
+      category: 'Componentes' as ProductCategory, // Fixed: Type assertion to ensure proper type
       description: '',
       price: 0,
       stock: 0,
@@ -54,7 +55,7 @@ const ProductForm = () => {
       // Pre-fill form with existing data
       form.reset({
         name: data.name,
-        category: data.category,
+        category: data.category as ProductCategory, // Fixed: Type assertion to ensure proper type
         description: data.description || '',
         price: data.price,
         stock: data.stock,
@@ -161,44 +162,42 @@ const ProductForm = () => {
           </div>
         ) : (
           <div className="bg-white p-6 rounded-md shadow-sm border">
-            <FormProvider {...form}>
-              <Form>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-6">
-                      <ProductFormFields />
-                    </div>
-
-                    <div className="space-y-6">
-                      <ProductImageUpload
-                        imagePreview={imagePreview}
-                        setImageFile={setImageFile}
-                        setImagePreview={setImagePreview}
-                      />
-                    </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <ProductFormFields />
                   </div>
 
-                  <div className="flex justify-end">
-                    <Button 
-                      type="submit" 
-                      disabled={form.formState.isSubmitting || mutation.isPending || isUploading}
-                    >
-                      {(form.formState.isSubmitting || mutation.isPending || isUploading) ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Salvando...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="mr-2 h-4 w-4" />
-                          Salvar
-                        </>
-                      )}
-                    </Button>
+                  <div className="space-y-6">
+                    <ProductImageUpload
+                      imagePreview={imagePreview}
+                      setImageFile={setImageFile}
+                      setImagePreview={setImagePreview}
+                    />
                   </div>
-                </form>
-              </Form>
-            </FormProvider>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button 
+                    type="submit" 
+                    disabled={form.formState.isSubmitting || mutation.isPending || isUploading}
+                  >
+                    {(form.formState.isSubmitting || mutation.isPending || isUploading) ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Salvar
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </div>
         )}
       </div>
