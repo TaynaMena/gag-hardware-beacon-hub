@@ -93,7 +93,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all_categories">All Categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -117,7 +117,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="">All Brands</SelectItem>
+                <SelectItem value="all_brands">All Brands</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
@@ -146,13 +146,13 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
             <div className="flex gap-2 flex-wrap">
               {selectedCategory && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  Category: {selectedCategory}
+                  Category: {selectedCategory === "all_categories" ? "All Categories" : selectedCategory}
                   <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedCategory("")} />
                 </Badge>
               )}
               {selectedBrand && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  Brand: {selectedBrand}
+                  Brand: {selectedBrand === "all_brands" ? "All Brands" : selectedBrand}
                   <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedBrand("")} />
                 </Badge>
               )}

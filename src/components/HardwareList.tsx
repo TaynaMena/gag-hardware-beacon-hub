@@ -24,8 +24,8 @@ const HardwareList: React.FC = () => {
     return hardwareData.filter((item) => {
       const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
                            item.description.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = !selectedCategory || item.category === selectedCategory;
-      const matchesBrand = !selectedBrand || item.brand === selectedBrand;
+      const matchesCategory = !selectedCategory || selectedCategory === "all_categories" || item.category === selectedCategory;
+      const matchesBrand = !selectedBrand || selectedBrand === "all_brands" || item.brand === selectedBrand;
       const matchesPrice = item.price >= priceRange[0] && item.price <= priceRange[1];
       
       return matchesSearch && matchesCategory && matchesBrand && matchesPrice;
