@@ -1,323 +1,589 @@
 
-import { useState, useEffect } from "react";
-import Layout from "@/components/Layout";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getAllProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-} from "@/services/productService";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
-import { Pencil, Trash2, Plus, X, Save } from "lucide-react";
-import { ProductCategory, NewProduct, Product } from "@/types/Product";
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Layout } from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/sonner';
+import { Pencil, Trash2, Plus, Package, ShoppingBag, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { getAllProducts, createProduct, updateProduct, deleteProduct } from '@/services/productService';
+import { ProductCategory } from '@/types/Product';
+
+// Form schema for adding/editing products
+const productSchema = z.object({
+  name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres'),
+  category: z.enum(['Monitores', 'Periféricos', 'Componentes'] as const),
+  description: z.string().min(10, 'A descrição deve ter pelo menos 10 caracteres'),
+  stock: z.coerce.number().min(0, 'A quantidade em estoque não pode ser negativa'),
+  image_url: z.string().optional()
+});
+
+type ProductFormValues = z.infer<typeof productSchema>;
+
+// Mock order data until we implement the real service
+const mockOrders = [
+  { 
+    id: '1', 
+    customer_name: 'João Silva', 
+    created_at: '2025-05-10T10:00:00Z', 
+    status: 'pending', 
+    total: 1200.90,
+    items: [
+      { product_name: 'Monitor Dell 27"', quantity: 1, price: 1200.90 }
+    ]
+  },
+  { 
+    id: '2', 
+    customer_name: 'Maria Santos', 
+    created_at: '2025-05-09T16:30:00Z', 
+    status: 'processing', 
+    total: 2450.50,
+    items: [
+      { product_name: 'Teclado Mecânico', quantity: 1, price: 450.50 },
+      { product_name: 'Placa de Vídeo RTX 4060', quantity: 1, price: 2000.00 }
+    ]
+  },
+  { 
+    id: '3', 
+    customer_name: 'Carlos Oliveira', 
+    created_at: '2025-05-08T09:15:00Z', 
+    status: 'completed', 
+    total: 3500.00,
+    items: [
+      { product_name: 'Kit Upgrade (CPU + Placa-mãe)', quantity: 1, price: 3500.00 }
+    ]
+  },
+];
 
 const AdminProducts = () => {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<NewProduct>({
-    name: "",
-    category: "Monitores",
-    description: "",
-    stock: 0,
-    image_url: ""
-  });
-  
   const queryClient = useQueryClient();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
   
-  const { data: products, isLoading, error } = useQuery({
-    queryKey: ["products"],
-    queryFn: getAllProducts,
+  // Get all products
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: getAllProducts
   });
-
-  const createMutation = useMutation({
+  
+  // Product form
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: '',
+      category: 'Componentes',
+      description: '',
+      stock: 0,
+      image_url: ''
+    }
+  });
+  
+  // Reset form when modal opens/closes
+  React.useEffect(() => {
+    if (!isAddModalOpen && !editingProduct) {
+      form.reset({
+        name: '',
+        category: 'Componentes',
+        description: '',
+        stock: 0,
+        image_url: ''
+      });
+    } else if (editingProduct) {
+      form.reset({
+        name: editingProduct.name,
+        category: editingProduct.category as ProductCategory,
+        description: editingProduct.description || '',
+        stock: editingProduct.stock,
+        image_url: editingProduct.image_url || ''
+      });
+    }
+  }, [isAddModalOpen, editingProduct, form]);
+  
+  // Add new product
+  const addMutation = useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Produto criado com sucesso!");
-      resetForm();
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Produto adicionado com sucesso!');
+      setIsAddModalOpen(false);
     },
-    onError: (error: Error) => {
-      toast.error(`Erro ao criar produto: ${error.message}`);
-    },
+    onError: (error) => {
+      toast.error(`Erro ao adicionar produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   });
-
+  
+  // Update product
   const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<NewProduct> }) =>
+    mutationFn: ({ id, updates }: { id: string; updates: any }) => 
       updateProduct(id, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Produto atualizado com sucesso!");
-      setEditingId(null);
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Produto atualizado com sucesso!');
+      setEditingProduct(null);
     },
-    onError: (error: Error) => {
-      toast.error(`Erro ao atualizar produto: ${error.message}`);
-    },
+    onError: (error) => {
+      toast.error(`Erro ao atualizar produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   });
-
+  
+  // Delete product
   const deleteMutation = useMutation({
     mutationFn: deleteProduct,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Produto excluído com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Produto excluído com sucesso!');
     },
-    onError: (error: Error) => {
-      toast.error(`Erro ao excluir produto: ${error.message}`);
-    },
+    onError: (error) => {
+      toast.error(`Erro ao excluir produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: name === "stock" ? parseInt(value) || 0 : value,
-    }));
-  };
-
-  const handleSelectChange = (value: string) => {
-    setForm((prev) => ({ ...prev, category: value as ProductCategory }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Make sure required fields are filled
-    if (!form.name || !form.category) {
-      toast.error("Por favor preencha todos os campos obrigatórios.");
-      return;
-    }
-    
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, updates: form });
+  
+  const onSubmit = (values: ProductFormValues) => {
+    if (editingProduct) {
+      updateMutation.mutate({
+        id: editingProduct.id,
+        updates: values
+      });
     } else {
-      createMutation.mutate(form);
+      addMutation.mutate(values);
     }
   };
-
-  const startEditing = (product: Product) => {
-    setEditingId(product.id);
-    setForm({
-      name: product.name,
-      category: product.category,
-      description: product.description,
-      stock: product.stock,
-      image_url: product.image_url
-    });
-    setShowForm(true);
+  
+  const handleEdit = (product: any) => {
+    setEditingProduct(product);
   };
-
-  const resetForm = () => {
-    setForm({
-      name: "",
-      category: "Monitores",
-      description: "",
-      stock: 0,
-      image_url: ""
-    });
-    setEditingId(null);
-    setShowForm(false);
+  
+  const handleDelete = (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este produto?')) {
+      deleteMutation.mutate(id);
+    }
   };
-
-  if (error) {
-    return (
-      <Layout>
-        <div className="p-6 bg-red-50 text-red-700 rounded-lg">
-          Erro ao carregar produtos: {(error as Error).message}
-        </div>
-      </Layout>
-    );
-  }
-
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300">Aguardando</Badge>;
+      case 'processing':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-300">Processando</Badge>;
+      case 'completed':
+        return <Badge variant="outline" className="bg-green-50 text-green-800 border-green-300">Entregue</Badge>;
+      default:
+        return <Badge variant="outline">Desconhecido</Badge>;
+    }
+  };
+  
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="h-4 w-4 text-yellow-600" />;
+      case 'processing':
+        return <Package className="h-4 w-4 text-blue-600" />;
+      case 'completed':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      default:
+        return <XCircle className="h-4 w-4 text-red-600" />;
+    }
+  };
+  
   return (
     <Layout>
-      <div className="mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Gerenciamento de Produtos</CardTitle>
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              variant={showForm ? "outline" : "default"}
-            >
-              {showForm ? (
-                <>
-                  <X className="mr-2 h-4 w-4" />
-                  Cancelar
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Novo Produto
-                </>
-              )}
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {showForm && (
-              <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium mb-1">Nome do Produto*</label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={form.name}
-                      onChange={handleInputChange}
-                      placeholder="Nome do produto"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium mb-1">Categoria*</label>
-                    <Select
-                      value={form.category}
-                      onValueChange={handleSelectChange}
-                    >
-                      <SelectTrigger id="category">
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Monitores">Monitores</SelectItem>
-                        <SelectItem value="Periféricos">Periféricos</SelectItem>
-                        <SelectItem value="Componentes">Componentes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label htmlFor="stock" className="block text-sm font-medium mb-1">Quantidade em Estoque*</label>
-                    <Input
-                      id="stock"
-                      name="stock"
-                      type="number"
-                      min="0"
-                      value={form.stock}
-                      onChange={handleInputChange}
-                      placeholder="Quantidade em estoque"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="image_url" className="block text-sm font-medium mb-1">URL da Imagem</label>
-                    <Input
-                      id="image_url"
-                      name="image_url"
-                      value={form.image_url || ""}
-                      onChange={handleInputChange}
-                      placeholder="URL da imagem do produto"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium mb-1">Descrição</label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={form.description}
-                    onChange={handleInputChange}
-                    placeholder="Descrição do produto"
-                    rows={4}
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={resetForm}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                    <Save className="mr-2 h-4 w-4" />
-                    {editingId ? "Atualizar Produto" : "Salvar Produto"}
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {isLoading ? (
-              <div className="text-center py-10">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gag-purple mx-auto"></div>
-                <p className="mt-4 text-gray-600">Carregando produtos...</p>
-              </div>
-            ) : products && products.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 px-4">Nome</th>
-                      <th className="text-left py-2 px-4">Categoria</th>
-                      <th className="text-center py-2 px-4">Estoque</th>
-                      <th className="text-right py-2 px-4">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map((product) => (
-                      <tr key={product.id} className="border-b hover:bg-gray-50">
-                        <td className="py-2 px-4">
-                          <div className="flex items-center gap-2">
-                            {product.image_url && (
-                              <img
-                                src={product.image_url}
-                                alt={product.name}
-                                className="h-10 w-10 object-cover rounded"
-                              />
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-blue-900">Painel de Administração</h1>
+        </div>
+        
+        <Tabs defaultValue="products" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="products" className="flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4" />
+              <span>Produtos</span>
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              <span>Pedidos</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="products">
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold">Lista de Produtos</h2>
+                <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="flex items-center gap-2">
+                      <Plus size={16} />
+                      <span>Adicionar Produto</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Adicionar Novo Produto</DialogTitle>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome do Produto</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Nome do produto" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Categoria</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione uma categoria" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Monitores">Monitores</SelectItem>
+                                  <SelectItem value="Periféricos">Periféricos</SelectItem>
+                                  <SelectItem value="Componentes">Componentes</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Descrição</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Descrição detalhada do produto" 
+                                  rows={3} 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="stock"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Estoque</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    min="0"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
                             )}
-                            <span>{product.name}</span>
+                          />
+                          <FormField
+                            control={form.control}
+                            name="image_url"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>URL da Imagem (opcional)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="https://..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <DialogFooter>
+                          <Button 
+                            type="submit" 
+                            disabled={addMutation.isPending}
+                          >
+                            {addMutation.isPending ? 'Salvando...' : 'Salvar Produto'}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+                
+                {/* Edit Product Dialog */}
+                <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Editar Produto</DialogTitle>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome do Produto</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Nome do produto" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Categoria</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione uma categoria" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Monitores">Monitores</SelectItem>
+                                  <SelectItem value="Periféricos">Periféricos</SelectItem>
+                                  <SelectItem value="Componentes">Componentes</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Descrição</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Descrição detalhada do produto" 
+                                  rows={3} 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="stock"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Estoque</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    min="0"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="image_url"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>URL da Imagem (opcional)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="https://..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <DialogFooter>
+                          <Button 
+                            type="submit" 
+                            disabled={updateMutation.isPending}
+                          >
+                            {updateMutation.isPending ? 'Atualizando...' : 'Atualizar Produto'}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              
+              {isLoading ? (
+                <div className="text-center py-8">Carregando produtos...</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome do Produto</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead>Estoque</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {products.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-6">
+                            Nenhum produto encontrado
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        products.map((product) => (
+                          <TableRow key={product.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                                  {product.image_url ? (
+                                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs text-gray-500">
+                                      Sem img
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-medium">{product.name}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>{product.category}</TableCell>
+                            <TableCell>
+                              <span className={product.stock === 0 ? "text-red-600 font-medium" : ""}>
+                                {product.stock} unidades
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleEdit(product)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                  <span className="sr-only">Editar</span>
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleDelete(product.id)}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Excluir</span>
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="orders">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    <span>Pedidos Recentes</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {mockOrders.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">Nenhum pedido encontrado</div>
+                  ) : (
+                    <div className="space-y-6">
+                      {mockOrders.map((order) => (
+                        <div 
+                          key={order.id} 
+                          className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-medium">{order.customer_name}</h4>
+                                {getStatusBadge(order.status)}
+                              </div>
+                              <p className="text-sm text-gray-600">
+                                Pedido #{order.id.substring(0, 6)} • {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium">R$ {order.total.toFixed(2)}</p>
+                              <p className="text-sm text-gray-500">{order.items.length} {order.items.length === 1 ? 'item' : 'itens'}</p>
+                            </div>
                           </div>
-                        </td>
-                        <td className="py-2 px-4">{product.category}</td>
-                        <td className="py-2 px-4 text-center">
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${
-                              product.stock === 0
-                                ? "bg-red-100 text-red-800"
-                                : product.stock < 3
-                                ? "bg-amber-100 text-amber-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {product.stock}
-                          </span>
-                        </td>
-                        <td className="py-2 px-4 text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => startEditing(product)}
-                            title="Editar"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => deleteMutation.mutate(product.id)}
-                            title="Excluir"
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-10">
-                <p className="text-gray-500">
-                  Nenhum produto cadastrado. Clique em "Novo Produto" para adicionar.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                          
+                          <div className="border-t border-gray-200 mt-3 pt-3">
+                            <div className="space-y-2">
+                              {order.items.map((item, idx) => (
+                                <div key={idx} className="flex justify-between text-sm">
+                                  <span>{item.product_name} x {item.quantity}</span>
+                                  <span>R$ {item.price.toFixed(2)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-200">
+                            <div className="flex items-center gap-1 text-sm">
+                              {getStatusIcon(order.status)}
+                              <span>{order.status === 'pending' ? 'Aguardando processamento' : 
+                                    order.status === 'processing' ? 'Em processamento' : 
+                                    'Entregue'}</span>
+                            </div>
+                            <Button size="sm" variant="outline">
+                              Detalhes
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );
