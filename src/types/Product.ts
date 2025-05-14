@@ -7,6 +7,7 @@ export interface Product {
   category: ProductCategory;
   description: string;
   stock: number;
+  price: number; // Adicionando campo de preço
   image_url: string;
   created_at: string;
   updated_at: string;
@@ -17,8 +18,9 @@ export interface NewProduct {
   category: ProductCategory;
   description: string;
   stock: number;
+  price: number; // Adicionando campo de preço obrigatório
   image_url?: string;
 }
 
-// Add a new type for product updates that makes all fields optional
+// Tipo para atualizações de produto que torna todos os campos opcionais
 export type ProductUpdate = Partial<NewProduct>;

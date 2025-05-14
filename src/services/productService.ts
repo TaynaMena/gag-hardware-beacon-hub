@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductCategory, NewProduct, ProductUpdate } from "@/types/Product";
 
@@ -59,7 +60,7 @@ export const createProduct = async (product: NewProduct): Promise<Product> => {
   return (data as unknown) as Product;
 };
 
-// Update this function to use ProductUpdate type
+// Esta função usa o tipo ProductUpdate que é um Partial<NewProduct>
 export const updateProduct = async (id: string, updates: ProductUpdate): Promise<Product> => {
   const { data, error } = await supabase
     .from("products")

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
@@ -25,6 +26,7 @@ const productSchema = z.object({
   category: z.enum(['Monitores', 'Periféricos', 'Componentes'] as const),
   description: z.string().min(10, 'A descrição deve ter pelo menos 10 caracteres'),
   stock: z.coerce.number().min(0, 'A quantidade em estoque não pode ser negativa'),
+  price: z.coerce.number().min(0, 'O preço não pode ser negativo'),
   image_url: z.string().optional()
 });
 
@@ -84,6 +86,7 @@ const AdminProducts = () => {
       category: 'Componentes',
       description: '',
       stock: 0,
+      price: 0,
       image_url: ''
     }
   });
@@ -96,6 +99,7 @@ const AdminProducts = () => {
         category: 'Componentes',
         description: '',
         stock: 0,
+        price: 0,
         image_url: ''
       });
     } else if (editingProduct) {
@@ -104,6 +108,7 @@ const AdminProducts = () => {
         category: editingProduct.category as ProductCategory,
         description: editingProduct.description || '',
         stock: editingProduct.stock,
+        price: editingProduct.price || 0,
         image_url: editingProduct.image_url || ''
       });
     }
@@ -111,7 +116,18 @@ const AdminProducts = () => {
   
   // Add new product
   const addMutation = useMutation({
-    mutationFn: createProduct,
+    mutationFn: (values: ProductFormValues): Promise<any> => {
+      // Criar um objeto que corresponda ao tipo NewProduct
+      const newProduct: NewProduct = {
+        name: values.name,
+        category: values.category,
+        description: values.description,
+        stock: values.stock,
+        price: values.price,
+        image_url: values.image_url
+      };
+      return createProduct(newProduct);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Produto adicionado com sucesso!');
@@ -122,18 +138,17 @@ const AdminProducts = () => {
     }
   });
   
-  // Update product using the new ProductUpdate type
+  // Update product using the ProductUpdate type
   const updateMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<ProductFormValues> }) => {
-      // Create a proper update object that matches ProductUpdate type
-      // Note: ProductUpdate is already defined as Partial<NewProduct>,
-      // so we can pass partial updates safely
+      // Criar um objeto que corresponda ao tipo ProductUpdate (que é um Partial<NewProduct>)
       const productUpdates: ProductUpdate = {};
       
       if (updates.name !== undefined) productUpdates.name = updates.name;
       if (updates.category !== undefined) productUpdates.category = updates.category as ProductCategory;
       if (updates.description !== undefined) productUpdates.description = updates.description;
       if (updates.stock !== undefined) productUpdates.stock = updates.stock;
+      if (updates.price !== undefined) productUpdates.price = updates.price;
       if (updates.image_url !== undefined) productUpdates.image_url = updates.image_url;
       
       return updateProduct(id, productUpdates);
@@ -301,6 +316,24 @@ const AdminProducts = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
+                            name="price"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Preço (R$)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    min="0"
+                                    step="0.01"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
                             name="stock"
                             render={({ field }) => (
                               <FormItem>
@@ -316,20 +349,20 @@ const AdminProducts = () => {
                               </FormItem>
                             )}
                           />
-                          <FormField
-                            control={form.control}
-                            name="image_url"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>URL da Imagem (opcional)</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="https://..." {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                         </div>
+                        <FormField
+                          control={form.control}
+                          name="image_url"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>URL da Imagem (opcional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <DialogFooter>
                           <Button 
                             type="submit" 
@@ -409,6 +442,24 @@ const AdminProducts = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
+                            name="price"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Preço (R$)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    min="0"
+                                    step="0.01"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
                             name="stock"
                             render={({ field }) => (
                               <FormItem>
@@ -424,20 +475,20 @@ const AdminProducts = () => {
                               </FormItem>
                             )}
                           />
-                          <FormField
-                            control={form.control}
-                            name="image_url"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>URL da Imagem (opcional)</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="https://..." {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                         </div>
+                        <FormField
+                          control={form.control}
+                          name="image_url"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>URL da Imagem (opcional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <DialogFooter>
                           <Button 
                             type="submit" 
@@ -461,6 +512,7 @@ const AdminProducts = () => {
                       <TableRow>
                         <TableHead>Nome do Produto</TableHead>
                         <TableHead>Categoria</TableHead>
+                        <TableHead>Preço</TableHead>
                         <TableHead>Estoque</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
@@ -468,7 +520,7 @@ const AdminProducts = () => {
                     <TableBody>
                       {products.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-6">
+                          <TableCell colSpan={5} className="text-center py-6">
                             Nenhum produto encontrado
                           </TableCell>
                         </TableRow>
@@ -492,6 +544,11 @@ const AdminProducts = () => {
                               </div>
                             </TableCell>
                             <TableCell>{product.category}</TableCell>
+                            <TableCell>
+                              <span className="font-medium text-blue-900">
+                                R$ {product.price ? product.price.toFixed(2) : '0.00'}
+                              </span>
+                            </TableCell>
                             <TableCell>
                               <span className={product.stock === 0 ? "text-red-600 font-medium" : ""}>
                                 {product.stock} unidades
