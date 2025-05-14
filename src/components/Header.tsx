@@ -13,14 +13,14 @@ const Header: React.FC = () => {
   return (
     <header className="bg-navy-dark bg-[#01036d] shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24">
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="flex-1 flex justify-start">
             <Link to="/" className="flex items-center">
               <img 
-                src="/lovable-uploads/21f3ed71-8d86-46b6-a366-7dd0be624a6c.png" 
+                src="/lovable-uploads/3c9dcd17-393d-4323-834c-ed34a5d7eb30.png" 
                 alt="GAG Hardware" 
-                className="h-16 w-auto"
+                className="h-20 w-auto"
               />
             </Link>
           </div>

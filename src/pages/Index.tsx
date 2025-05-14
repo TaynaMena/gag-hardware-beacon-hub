@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import HardwareList from '@/components/HardwareList';
@@ -69,7 +68,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4 text-white">
-                <img src="/lovable-uploads/21f3ed71-8d86-46b6-a366-7dd0be624a6c.png" alt="GAG Hardware" className="h-12" />
+                <img src="/lovable-uploads/3c9dcd17-393d-4323-834c-ed34a5d7eb30.png" alt="GAG Hardware" className="h-16" />
               </h3>
               <p className="text-gray-300">
                 Sua fonte confiável de componentes de hardware de computador de alta qualidade.

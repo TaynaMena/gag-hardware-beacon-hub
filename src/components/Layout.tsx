@@ -19,9 +19,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="container mx-auto px-4 text-center text-gray-600">
           <div className="flex justify-center mb-4">
             <img 
-              src="/lovable-uploads/21f3ed71-8d86-46b6-a366-7dd0be624a6c.png" 
+              src="/lovable-uploads/3c9dcd17-393d-4323-834c-ed34a5d7eb30.png" 
               alt="GAG Hardware" 
-              className="h-10"
+              className="h-12"
             />
           </div>
           <p>&copy; {new Date().getFullYear()} GAG Hardware - Todos os direitos reservados</p>
