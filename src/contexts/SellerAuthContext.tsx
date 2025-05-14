@@ -68,14 +68,17 @@ export const SellerAuthProvider: React.FC<SellerAuthProviderProps> = ({ children
         return false;
       }
 
-      if (data && data.success) {
-        setSeller(data.seller);
-        localStorage.setItem('seller', JSON.stringify(data.seller));
+      // Type assertion to safely handle the response
+      const response = data as { success: boolean; seller?: Seller; message?: string };
+      
+      if (response && response.success) {
+        setSeller(response.seller || null);
+        localStorage.setItem('seller', JSON.stringify(response.seller));
         return true;
       } else {
         toast({
           title: "Falha no login",
-          description: data?.message || "Credenciais inválidas",
+          description: response?.message || "Credenciais inválidas",
           variant: "destructive",
         });
         return false;

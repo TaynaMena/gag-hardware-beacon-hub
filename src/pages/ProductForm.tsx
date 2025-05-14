@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -174,10 +173,10 @@ const ProductForm = () => {
         if (error) throw new Error(error.message);
         return 'updated';
       } else {
-        // Create new product
+        // Create new product - Fix: Ensure we pass a single object, not an array
         const { error } = await supabase
           .from('products')
-          .insert([productData]);
+          .insert(productData); // Remove the array brackets
         
         if (error) throw new Error(error.message);
         return 'created';

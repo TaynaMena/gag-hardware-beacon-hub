@@ -1,17 +1,16 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu';
 import { navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, X, ShoppingCart, User } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { items } = useCart();
   const location = useLocation();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, User, Loader2 } from 'lucide-react';
+import { Edit, Trash2, User, Loader2, UserPlus } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { 
   Table,
