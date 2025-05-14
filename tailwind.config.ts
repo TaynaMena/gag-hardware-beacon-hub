@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,14 +62,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// GAG brand colors
+				// GAG brand colors - Updated with the correct color palette
 				gag: {
-					blue: '#0000ff',  // Primary blue
-					'blue-dark': '#00006c',  // Dark blue
-					cyan: '#15f1ff',  // Cyan
-					white: '#ffffff',  // White
-					green: '#48ff17',  // Green
-					dark: '#1b1b1b',   // Dark color for backgrounds
+					purple: '#9b87f5',  // Primary Purple
+					'purple-dark': '#7E69AB',  // Secondary Purple
+					'purple-darker': '#6E59A5',  // Tertiary Purple
+					'purple-light': '#D6BCFA',  // Light Purple
+					gray: '#8E9196',  // Neutral Gray
+					dark: '#1A1F2C',   // Dark Purple
 				}
 			},
 			borderRadius: {
