@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/components/ui/use-toast';
 import { Collaborator } from '@/types/Collaborator';
 
 interface CollaboratorAuthContextType {
@@ -98,7 +98,6 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
 
       if (collaboratorError || !collaboratorData) {
         toast({
-          title: "Erro de autenticação",
           description: "Matrícula não encontrada",
           variant: "destructive",
         });
@@ -116,7 +115,6 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
       // Regular login with password
       if (collaboratorData.password_hash !== password) {
         toast({
-          title: "Erro de autenticação",
           description: "Senha incorreta",
           variant: "destructive",
         });
@@ -131,7 +129,6 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
       await fetchMonthlyOrderCount(collaboratorData.id as string);
       
       toast({
-        title: "Login realizado",
         description: `Bem-vindo, ${collaboratorData.name}!`,
       });
       return true;
@@ -139,7 +136,6 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
     } catch (error) {
       console.error('Login error:', error);
       toast({
-        title: "Erro no login",
         description: "Ocorreu um erro ao tentar fazer login. Tente novamente.",
         variant: "destructive",
       });
@@ -160,7 +156,6 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
 
       if (error) {
         toast({
-          title: "Erro ao criar senha",
           description: error.message,
           variant: "destructive",
         });
@@ -176,16 +171,14 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
       await fetchMonthlyOrderCount(collaborator.id as string);
       
       toast({
-        title: "Senha criada com sucesso",
-        description: `Bem-vindo, ${collaborator.name}!`,
+        description: `Senha criada com sucesso! Bem-vindo, ${collaborator.name}!`,
       });
       return true;
 
     } catch (error) {
       console.error('First time login error:', error);
       toast({
-        title: "Erro ao criar senha",
-        description: "Ocorreu um erro. Tente novamente.",
+        description: "Ocorreu um erro ao criar senha. Tente novamente.",
         variant: "destructive",
       });
       return false;
@@ -199,7 +192,6 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
     localStorage.removeItem('collaborator');
     setMonthlyOrderCount(0);
     toast({
-      title: "Logout realizado",
       description: "Você saiu da sua conta com sucesso."
     });
   };

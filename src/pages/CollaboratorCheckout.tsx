@@ -112,15 +112,24 @@ const CollaboratorCheckout: React.FC = () => {
         
       if (itemsError) throw new Error(`Erro ao adicionar itens: ${itemsError.message}`);
       
-      // Update product stock
+      // Update product stock - manually update each product's stock
       for (const item of items) {
-        const { error: stockError } = await supabase
-          .rpc('decrease_product_stock', { 
-            product_id: item.id, 
-            quantity: item.quantity 
-          });
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .select('stock')
+          .eq('id', item.id)
+          .single();
           
-        if (stockError) throw new Error(`Erro ao atualizar estoque: ${stockError.message}`);
+        if (productError) throw new Error(`Erro ao buscar produto: ${productError.message}`);
+        
+        const newStock = productData.stock - item.quantity;
+        
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({ stock: newStock })
+          .eq('id', item.id);
+          
+        if (updateError) throw new Error(`Erro ao atualizar estoque: ${updateError.message}`);
       }
       
       // Clear the cart and update monthly order count

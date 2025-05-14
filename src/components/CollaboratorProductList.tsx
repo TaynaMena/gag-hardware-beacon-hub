@@ -34,8 +34,15 @@ export const ProductList: React.FC = () => {
           .order('name');
           
         if (error) throw error;
-        setProducts(data || []);
-        setFilteredProducts(data || []);
+        
+        // Map the raw data to ensure category is of type ProductCategory
+        const typedProducts = data?.map(item => ({
+          ...item,
+          category: item.category as ProductCategory
+        })) || [];
+        
+        setProducts(typedProducts);
+        setFilteredProducts(typedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
