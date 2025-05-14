@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu';
 import { navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, X, ShoppingCart, User } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, Users } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { items } = useCart();
@@ -52,6 +53,13 @@ const Header: React.FC = () => {
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
+                  <Link to="/colaborador/login">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      <Users className="mr-1 h-4 w-4" /> Área do Colaborador
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
                   <Link to="/admin/login">
                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                       <User className="mr-1 h-4 w-4" /> Área do Vendedor
@@ -82,6 +90,14 @@ const Header: React.FC = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Início
+            </Link>
+            <Link
+              to="/colaborador/login"
+              className="text-white py-2 px-3 rounded hover:bg-blue-800 flex items-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Área do Colaborador
             </Link>
             <Link
               to="/admin/login"

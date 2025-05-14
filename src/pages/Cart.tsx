@@ -1,82 +1,58 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import { useCart } from '@/contexts/CartContext';
-import CartEmpty from '@/components/cart/CartEmpty';
 import CartItem from '@/components/cart/CartItem';
 import CartSummary from '@/components/cart/CartSummary';
-import CheckoutForm from '@/components/cart/CheckoutForm';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import CartEmpty from '@/components/cart/CartEmpty';
+import { useCart } from '@/contexts/CartContext';
 
 const Cart = () => {
   const { items, removeItem, updateItemQuantity, clearCart, getTotalPrice } = useCart();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  
-  if (items.length === 0 && !isCheckingOut) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const navigate = useNavigate();
+
+  const handleClearCart = () => {
+    clearCart();
+  };
+
+  const handleCheckout = () => {
+    // Redirect to the collaborator checkout
+    navigate('/colaborador/checkout');
+  };
+
+  if (items.length === 0) {
     return (
       <Layout>
-        <CartEmpty />
+        <div className="container mx-auto py-8">
+          <CartEmpty />
+        </div>
       </Layout>
     );
   }
-  
+
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-blue-900">
-          {isCheckingOut ? 'Finalizar Compra' : 'Seu Carrinho'}
-        </h1>
+      <div className="container mx-auto py-6">
+        <h1 className="text-2xl font-bold text-blue-900 mb-6">Seu Carrinho</h1>
         
-        {isCheckingOut ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <CheckoutForm 
-                items={items}
-                getTotalPrice={getTotalPrice}
-                onBackToCart={() => setIsCheckingOut(false)}
-                clearCart={clearCart}
-              />
-            </div>
-            
-            <div className="md:col-span-1">
-              <CartSummary 
-                items={items}
-                getTotalPrice={getTotalPrice}
-                onClearCart={clearCart}
-                onCheckout={() => setIsCheckingOut(true)}
-                isCheckoutView={true}
-              />
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="space-y-4 mb-8">
-              {items.map(item => (
-                <CartItem 
-                  key={item.id}
-                  item={item}
-                  onRemove={removeItem}
-                  onUpdateQuantity={updateItemQuantity}
-                />
-              ))}
-            </div>
-            
-            <CartSummary 
-              items={items}
-              getTotalPrice={getTotalPrice}
-              onClearCart={clearCart}
-              onCheckout={() => setIsCheckingOut(true)}
+        <div className="space-y-4 mb-6">
+          {items.map((item) => (
+            <CartItem
+              key={item.id}
+              item={item}
+              onRemove={removeItem}
+              onUpdateQuantity={updateItemQuantity}
             />
-            
-            <Alert className="bg-blue-50 border-blue-200">
-              <AlertDescription>
-                <p className="text-sm">
-                  <strong>Nota:</strong> Cada colaborador pode fazer no máximo 4 pedidos por mês.
-                </p>
-              </AlertDescription>
-            </Alert>
-          </>
-        )}
+          ))}
+        </div>
+        
+        <CartSummary
+          items={items}
+          getTotalPrice={getTotalPrice}
+          onClearCart={handleClearCart}
+          onCheckout={handleCheckout}
+        />
       </div>
     </Layout>
   );

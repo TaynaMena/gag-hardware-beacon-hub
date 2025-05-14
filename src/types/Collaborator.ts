@@ -7,4 +7,5 @@ export interface Collaborator {
   sector?: string;
   phone?: string;
   created_at?: string;
+  password_hash?: string;
 }
