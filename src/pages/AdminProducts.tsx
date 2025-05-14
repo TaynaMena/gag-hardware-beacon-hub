@@ -1,186 +1,236 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Layout from '@/components/Layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingBag, Package } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useSellerAuth } from '@/contexts/SellerAuthContext';
+import AdminLayout from '@/components/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { 
+  Table, TableBody, TableCell, TableHead, 
+  TableHeader, TableRow 
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/sonner';
-import { getAllProducts, createProduct, updateProduct, deleteProduct } from '@/services/productService';
-import { Product, NewProduct, ProductUpdate } from '@/types/Product';
-import ProductList from '@/components/admin/ProductList';
-import OrderList from '@/components/admin/OrderList';
-import { ProductFormValues } from '@/components/admin/ProductForm';
-
-// Mock order data until we implement the real service
-const mockOrders = [
-  { 
-    id: '1', 
-    customer_name: 'João Silva', 
-    created_at: '2025-05-10T10:00:00Z', 
-    status: 'pending', 
-    total: 1200.90,
-    items: [
-      { product_name: 'Monitor Dell 27"', quantity: 1, price: 1200.90 }
-    ]
-  },
-  { 
-    id: '2', 
-    customer_name: 'Maria Santos', 
-    created_at: '2025-05-09T16:30:00Z', 
-    status: 'processing', 
-    total: 2450.50,
-    items: [
-      { product_name: 'Teclado Mecânico', quantity: 1, price: 450.50 },
-      { product_name: 'Placa de Vídeo RTX 4060', quantity: 1, price: 2000.00 }
-    ]
-  },
-  { 
-    id: '3', 
-    customer_name: 'Carlos Oliveira', 
-    created_at: '2025-05-08T09:15:00Z', 
-    status: 'completed', 
-    total: 3500.00,
-    items: [
-      { product_name: 'Kit Upgrade (CPU + Placa-mãe)', quantity: 1, price: 3500.00 }
-    ]
-  },
-];
+import { Edit, Trash2, PackagePlus, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
+import { Product } from '@/types/Product';
 
 const AdminProducts = () => {
+  const { isAuthenticated } = useSellerAuth();
   const queryClient = useQueryClient();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  
-  // Get all products
-  const { data: products = [], isLoading } = useQuery({
+  const navigate = useNavigate();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Query products
+  const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
-    queryFn: getAllProducts
-  });
-  
-  // Add new product
-  const addMutation = useMutation({
-    mutationFn: (values: ProductFormValues): Promise<any> => {
-      // Criar um objeto que corresponda ao tipo NewProduct
-      const newProduct: NewProduct = {
-        name: values.name,
-        category: values.category,
-        description: values.description,
-        stock: values.stock,
-        price: values.price,
-        image_url: values.image_url
-      };
-      return createProduct(newProduct);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Produto adicionado com sucesso!');
-      setIsAddModalOpen(false);
-    },
-    onError: (error) => {
-      toast.error(`Erro ao adicionar produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-    }
-  });
-  
-  // Update product using the ProductUpdate type
-  const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<ProductFormValues> }) => {
-      // Criar um objeto que corresponda ao tipo ProductUpdate (que é um Partial<NewProduct>)
-      const productUpdates: ProductUpdate = {};
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
       
-      if (updates.name !== undefined) productUpdates.name = updates.name;
-      if (updates.category !== undefined) productUpdates.category = updates.category;
-      if (updates.description !== undefined) productUpdates.description = updates.description;
-      if (updates.stock !== undefined) productUpdates.stock = updates.stock;
-      if (updates.price !== undefined) productUpdates.price = updates.price;
-      if (updates.image_url !== undefined) productUpdates.image_url = updates.image_url;
+      if (error) {
+        toast.error(`Erro ao carregar produtos: ${error.message}`);
+        throw error;
+      }
       
-      return updateProduct(id, productUpdates);
+      return data as Product[];
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Produto atualizado com sucesso!');
-      setEditingProduct(null);
-    },
-    onError: (error) => {
-      toast.error(`Erro ao atualizar produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-    }
   });
-  
-  // Delete product
+
+  // Delete product mutation
   const deleteMutation = useMutation({
-    mutationFn: deleteProduct,
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Produto excluído com sucesso!');
+      setDeleteId(null);
     },
     onError: (error) => {
-      toast.error(`Erro ao excluir produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-    }
+      toast.error(`Erro ao excluir produto: ${error.message}`);
+    },
   });
-  
-  const onSubmit = (values: ProductFormValues) => {
-    if (editingProduct) {
-      updateMutation.mutate({
-        id: editingProduct.id,
-        updates: values
-      });
-    } else {
-      addMutation.mutate(values);
+
+  const handleEditProduct = (id: string) => {
+    navigate(`/admin/editar-produto/${id}`);
+  };
+
+  const handleDeleteProduct = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteMutation.mutate(deleteId);
     }
   };
-  
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
+
+  const cancelDelete = () => {
+    setDeleteId(null);
   };
-  
-  const handleDelete = (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este produto?')) {
-      deleteMutation.mutate(id);
-    }
-  };
-  
+
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-blue-900">Painel de Administração</h1>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <h1 className="text-2xl font-bold tracking-tight">Gerenciar Produtos</h1>
+          <Button
+            onClick={() => navigate('/admin/cadastrar-produto')}
+            className="mt-4 md:mt-0"
+          >
+            <PackagePlus className="mr-2 h-4 w-4" /> Cadastrar Produto
+          </Button>
         </div>
         
-        <Tabs defaultValue="products" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4" />
-              <span>Produtos</span>
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              <span>Pedidos</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="products">
-            <ProductList
-              products={products}
-              isLoading={isLoading}
-              isAddModalOpen={isAddModalOpen}
-              setIsAddModalOpen={setIsAddModalOpen}
-              editingProduct={editingProduct}
-              setEditingProduct={setEditingProduct}
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-              addMutation={addMutation}
-              updateMutation={updateMutation}
-              onSubmit={onSubmit}
-            />
-          </TabsContent>
-          
-          <TabsContent value="orders">
-            <OrderList orders={mockOrders} />
-          </TabsContent>
-        </Tabs>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          </div>
+        ) : products && products.length > 0 ? (
+          <div className="bg-white rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40%]">Produto</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Estoque</TableHead>
+                  <TableHead>Preço</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100">
+                          {product.image_url ? (
+                            <img
+                              src={product.image_url}
+                              alt={product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center text-gray-400">
+                              <PackagePlus size={16} />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          {product.description && (
+                            <p className="text-xs text-gray-500 truncate max-w-[200px]">
+                              {product.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>
+                      <StockBadge stock={product.stock} />
+                    </TableCell>
+                    <TableCell>
+                      R$ {product.price.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditProduct(product.id)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteProduct(product.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="text-center p-12 border rounded-md bg-white">
+            <PackagePlus className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="font-semibold text-lg mb-2">Nenhum produto cadastrado</h3>
+            <p className="text-gray-500 mb-6">
+              Cadastre produtos para que os colaboradores possam comprá-los.
+            </p>
+            <Button onClick={() => navigate('/admin/cadastrar-produto')}>
+              <PackagePlus className="mr-2 h-4 w-4" /> Cadastrar Produto
+            </Button>
+          </div>
+        )}
       </div>
-    </Layout>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={deleteId !== null} onOpenChange={cancelDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                'Excluir'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </AdminLayout>
   );
+};
+
+// Helper component for stock display
+interface StockBadgeProps {
+  stock: number;
+}
+
+const StockBadge: React.FC<StockBadgeProps> = ({ stock }) => {
+  if (stock === 0) {
+    return <Badge variant="destructive">Sem estoque</Badge>;
+  } else if (stock < 5) {
+    return <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100">Baixo: {stock}</Badge>;
+  } else {
+    return <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">Em estoque: {stock}</Badge>;
+  }
 };
 
 export default AdminProducts;

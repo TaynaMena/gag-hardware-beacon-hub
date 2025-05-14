@@ -1,14 +1,20 @@
 
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { ShoppingCart, Settings } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useCart } from '@/contexts/CartContext';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
+import { Button } from '@/components/ui/button';
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu';
+import { navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
+import { useMobile } from '@/hooks/use-mobile';
+import { Menu, X, ShoppingCart, User } from 'lucide-react';
 
 const Header: React.FC = () => {
-  const { getTotalItems } = useCart();
-  const totalItems = getTotalItems();
+  const { items } = useCart();
+  const location = useLocation();
+  const isMobile = useMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <header className="bg-navy-dark bg-[#01036d] shadow-md sticky top-0 z-50">
@@ -25,31 +31,70 @@ const Header: React.FC = () => {
             </Link>
           </div>
 
-          {/* Right side navigation */}
-          <div className="flex items-center space-x-6">
-            <Link to="/admin-produtos" className="text-white hover:text-blue-200">
-              <div className="flex items-center gap-1">
-                <Settings className="h-5 w-5" />
-                <span>Admin</span>
-              </div>
-            </Link>
-            
-            <Link to="/carrinho" className="relative">
-              <Button variant="ghost" className="text-white">
-                <div className="flex items-center gap-1">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span>Carrinho</span>
-                  {totalItems > 0 && (
-                    <Badge className="ml-1 bg-blue-500">
-                      {totalItems}
-                    </Badge>
-                  )}
-                </div>
-              </Button>
-            </Link>
-          </div>
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <button
+              className="text-white p-2"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          )}
+
+          {/* Navigation - Desktop */}
+          {!isMobile && (
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link to="/">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      Início
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/admin/login">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      <User className="mr-1 h-4 w-4" /> Área do Vendedor
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          )}
+
+          {/* Cart Button */}
+          <Link to="/carrinho" className="ml-4">
+            <Button variant="outline" className="bg-transparent border-white text-white hover:bg-blue-800">
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              <span>Carrinho {totalItems > 0 && `(${totalItems})`}</span>
+            </Button>
+          </Link>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {isMobile && isMenuOpen && (
+        <div className="px-4 pb-4">
+          <nav className="flex flex-col space-y-2">
+            <Link
+              to="/"
+              className="text-white py-2 px-3 rounded hover:bg-blue-800"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Início
+            </Link>
+            <Link
+              to="/admin/login"
+              className="text-white py-2 px-3 rounded hover:bg-blue-800 flex items-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Área do Vendedor
+            </Link>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
