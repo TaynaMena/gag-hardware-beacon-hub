@@ -125,14 +125,16 @@ const AdminProducts = () => {
   // Update product using the new ProductUpdate type
   const updateMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<ProductFormValues> }) => {
-      // Create a product update object using the new type
-      const productUpdates: ProductUpdate = {
-        ...(updates.name && { name: updates.name }),
-        ...(updates.category && { category: updates.category as ProductCategory }),
-        ...(updates.description && { description: updates.description }),
-        ...(typeof updates.stock === 'number' && { stock: updates.stock }),
-        ...(updates.image_url && { image_url: updates.image_url })
-      };
+      // Create a proper update object that matches ProductUpdate type
+      // Note: ProductUpdate is already defined as Partial<NewProduct>,
+      // so we can pass partial updates safely
+      const productUpdates: ProductUpdate = {};
+      
+      if (updates.name !== undefined) productUpdates.name = updates.name;
+      if (updates.category !== undefined) productUpdates.category = updates.category as ProductCategory;
+      if (updates.description !== undefined) productUpdates.description = updates.description;
+      if (updates.stock !== undefined) productUpdates.stock = updates.stock;
+      if (updates.image_url !== undefined) productUpdates.image_url = updates.image_url;
       
       return updateProduct(id, productUpdates);
     },
