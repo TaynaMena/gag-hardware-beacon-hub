@@ -19,3 +19,6 @@ export interface NewProduct {
   stock: number;
   image_url?: string;
 }
+
+// Add a new type for product updates that makes all fields optional
+export type ProductUpdate = Partial<NewProduct>;

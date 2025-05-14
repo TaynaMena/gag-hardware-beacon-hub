@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/sonner';
 import { Pencil, Trash2, Plus, Package, ShoppingBag, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { getAllProducts, createProduct, updateProduct, deleteProduct } from '@/services/productService';
-import { ProductCategory, NewProduct } from '@/types/Product';
+import { ProductCategory, NewProduct, ProductUpdate } from '@/types/Product';
 
 // Form schema for adding/editing products
 const productSchema = z.object({
@@ -122,18 +122,19 @@ const AdminProducts = () => {
     }
   });
   
-  // Update product - Fix the type issue here
+  // Update product using the new ProductUpdate type
   const updateMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<ProductFormValues> }) => {
-      // Create a complete NewProduct object with all required fields
-      const validUpdates: NewProduct = {
-        name: updates.name || editingProduct.name, // Ensure name is always present
-        category: (updates.category as ProductCategory) || editingProduct.category,
-        description: updates.description || editingProduct.description || '',
-        stock: updates.stock ?? editingProduct.stock,
-        image_url: updates.image_url || editingProduct.image_url
+      // Create a product update object using the new type
+      const productUpdates: ProductUpdate = {
+        ...(updates.name && { name: updates.name }),
+        ...(updates.category && { category: updates.category as ProductCategory }),
+        ...(updates.description && { description: updates.description }),
+        ...(typeof updates.stock === 'number' && { stock: updates.stock }),
+        ...(updates.image_url && { image_url: updates.image_url })
       };
-      return updateProduct(id, validUpdates);
+      
+      return updateProduct(id, productUpdates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
