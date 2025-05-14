@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -100,10 +101,16 @@ const CollaboratorForm = () => {
           throw new Error('Já existe um colaborador com esta matrícula.');
         }
         
-        // Create new collaborator - Fix: Ensure we pass a single object, not an array
+        // Create new collaborator - Ensure we pass all required fields
         const { error } = await supabase
           .from('collaborators')
-          .insert(values); // Remove the array brackets
+          .insert({
+            name: values.name,
+            matricula: values.matricula,
+            email: values.email,
+            sector: values.sector,
+            phone: values.phone
+          });
         
         if (error) throw new Error(error.message);
         return 'created';

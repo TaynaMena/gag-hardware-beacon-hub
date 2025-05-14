@@ -68,8 +68,13 @@ export const SellerAuthProvider: React.FC<SellerAuthProviderProps> = ({ children
         return false;
       }
 
-      // Type assertion to safely handle the response
-      const response = data as { success: boolean; seller?: Seller; message?: string };
+      // Use proper casting for the response data
+      // First cast to unknown, then to our expected type to avoid TypeScript errors
+      const response = data as unknown as { 
+        success: boolean; 
+        seller?: Seller; 
+        message?: string;
+      };
       
       if (response && response.success) {
         setSeller(response.seller || null);

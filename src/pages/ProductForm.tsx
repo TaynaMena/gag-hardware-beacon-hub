@@ -157,10 +157,15 @@ const ProductForm = () => {
           setIsUploading(false);
         }
       }
-
+      
+      // Ensure we have all required fields for the product
       const productData = {
-        ...values,
-        image_url: imageUrl,
+        name: values.name,            // Required field
+        category: values.category,    // Required field
+        description: values.description || '',
+        price: values.price,
+        stock: values.stock,
+        image_url: imageUrl || null,  // Optional field
       };
       
       if (isEditing) {
@@ -173,10 +178,10 @@ const ProductForm = () => {
         if (error) throw new Error(error.message);
         return 'updated';
       } else {
-        // Create new product - Fix: Ensure we pass a single object, not an array
+        // Create new product with all required fields
         const { error } = await supabase
           .from('products')
-          .insert(productData); // Remove the array brackets
+          .insert(productData);
         
         if (error) throw new Error(error.message);
         return 'created';
