@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { CartItem } from "@/contexts/CartContext";
+import { Collaborator } from "@/types/Collaborator";
 
 interface CollaboratorData {
   name: string;
@@ -13,6 +14,8 @@ interface CollaboratorData {
 interface OrderData {
   items: CartItem[];
   collaborator: CollaboratorData;
+  notes?: string;
+  department: string;
 }
 
 // Check if the collaborator already exists in the database
@@ -28,7 +31,7 @@ export const getCollaboratorByMatricula = async (matricula: string) => {
     throw new Error(error.message);
   }
 
-  return data;
+  return data as Collaborator | null;
 };
 
 // Count orders for a collaborator in the current month
@@ -40,7 +43,7 @@ export const countMonthlyOrders = async (collaboratorId: string): Promise<number
   const { count, error } = await supabase
     .from("orders")
     .select("*", { count: "exact", head: true })
-    .eq("collaborator_id", collaboratorId)
+    .eq("user_id", collaboratorId)
     .gte("created_at", firstDayOfMonth)
     .lte("created_at", lastDayOfMonth);
 
@@ -52,42 +55,41 @@ export const countMonthlyOrders = async (collaboratorId: string): Promise<number
   return count || 0;
 };
 
-// Create a new order
-export const createOrder = async (orderData: OrderData) => {
-  // Start a transaction
-  // First, check if collaborator exists or create one
-  let collaboratorId;
-  const existingCollaborator = await getCollaboratorByMatricula(orderData.collaborator.matricula);
+// Create a new collaborator
+export const createCollaborator = async (collaboratorData: CollaboratorData) => {
+  const { data, error } = await supabase
+    .from("collaborators")
+    .insert(collaboratorData)
+    .select()
+    .single();
 
-  if (existingCollaborator) {
-    collaboratorId = existingCollaborator.id;
-    
-    // Check monthly order limit
-    const orderCount = await countMonthlyOrders(collaboratorId);
-    if (orderCount >= 4) {
-      throw new Error("Limite de 4 pedidos por mês excedido para este colaborador.");
-    }
-  } else {
-    // Create a new collaborator
-    const { data: newCollaborator, error: collaboratorError } = await supabase
-      .from("collaborators")
-      .insert(orderData.collaborator)
-      .select()
-      .single();
-
-    if (collaboratorError) {
-      console.error("Error creating collaborator:", collaboratorError);
-      throw new Error(collaboratorError.message);
-    }
-
-    collaboratorId = newCollaborator.id;
+  if (error) {
+    console.error("Error creating collaborator:", error);
+    throw new Error(error.message);
   }
 
+  return data as Collaborator;
+};
+
+// Create a new order
+export const createOrder = async (orderData: {
+  customer_name: string;
+  customer_email: string;
+  customer_department: string;
+  customer_notes?: string;
+  total: number;
+  user_id: string;
+}, cartItems: CartItem[]) => {
   // Create the order
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
-      collaborator_id: collaboratorId,
+      customer_name: orderData.customer_name,
+      customer_email: orderData.customer_email,
+      customer_department: orderData.customer_department,
+      customer_notes: orderData.customer_notes,
+      total: orderData.total,
+      user_id: orderData.user_id,
       status: "pending"
     })
     .select()
@@ -99,10 +101,13 @@ export const createOrder = async (orderData: OrderData) => {
   }
 
   // Add order items
-  const orderItems = orderData.items.map(item => ({
+  const orderItems = cartItems.map(item => ({
     order_id: order.id,
     product_id: item.id,
-    quantity: item.quantity
+    quantity: item.quantity,
+    price: item.price || 0,
+    product_name: item.name,
+    total: (item.price || 0) * item.quantity
   }));
 
   const { error: itemsError } = await supabase

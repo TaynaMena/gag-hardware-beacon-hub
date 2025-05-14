@@ -19,7 +19,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { createCollaborator, findCollaboratorByMatricula, createOrder, countOrdersThisMonth } from '@/services/orderService';
+import { 
+  getCollaboratorByMatricula, 
+  createCollaborator, 
+  createOrder, 
+  countMonthlyOrders 
+} from '@/services/orderService';
 import { Trash2, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -57,7 +62,7 @@ const Cart = () => {
   const orderMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       // Check if collaborator exists by matricula
-      const existingCollaborator = await findCollaboratorByMatricula(values.matricula);
+      const existingCollaborator = await getCollaboratorByMatricula(values.matricula);
       
       let collaboratorId;
       
@@ -65,7 +70,7 @@ const Cart = () => {
         collaboratorId = existingCollaborator.id;
         
         // Check monthly order limit
-        const orderCount = await countOrdersThisMonth(collaboratorId);
+        const orderCount = await countMonthlyOrders(collaboratorId);
         if (orderCount >= 4) {
           throw new Error("Limite de 4 pedidos por mês excedido para este colaborador.");
         }
