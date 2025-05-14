@@ -25,9 +25,10 @@ import {
   createOrder, 
   countMonthlyOrders 
 } from '@/services/orderService';
-import { Trash2, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { Trash2, ShoppingBag, AlertTriangle, ChevronLeft, CreditCard } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
@@ -42,7 +43,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const Cart = () => {
-  const { items, removeItem, updateItemQuantity, clearCart } = useCart();
+  const { items, removeItem, updateItemQuantity, clearCart, getTotalPrice } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const navigate = useNavigate();
   
@@ -87,7 +88,7 @@ const Cart = () => {
       }
       
       // Calculate total
-      const total = items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
+      const total = getTotalPrice();
       
       // Create order
       return await createOrder(
@@ -120,11 +121,14 @@ const Cart = () => {
   if (items.length === 0 && !isCheckingOut) {
     return (
       <Layout>
-        <div className="max-w-md mx-auto mt-8 text-center">
+        <div className="max-w-md mx-auto mt-8 text-center bg-white p-8 rounded-lg shadow-sm border border-gray-200">
           <ShoppingBag size={64} className="mx-auto text-gray-400 mb-4" />
           <h2 className="text-2xl font-bold mb-2">Seu carrinho está vazio</h2>
           <p className="text-gray-600 mb-6">Adicione algum item para continuar</p>
-          <Button onClick={() => navigate('/')}>Continuar Comprando</Button>
+          <Button onClick={() => navigate('/')} className="bg-blue-700 hover:bg-blue-800">
+            <ChevronLeft size={16} className="mr-1" />
+            Continuar Comprando
+          </Button>
         </div>
       </Layout>
     );
@@ -132,161 +136,189 @@ const Cart = () => {
   
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Seu Carrinho</h1>
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-blue-900">
+          {isCheckingOut ? 'Finalizar Compra' : 'Seu Carrinho'}
+        </h1>
         
         {isCheckingOut ? (
-          <div>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsCheckingOut(false)}
-              className="mb-6"
-            >
-              Voltar para o Carrinho
-            </Button>
-            
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome Completo</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Seu nome" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="matricula"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Matrícula</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Sua matrícula" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>E-mail Corporativo</FormLabel>
-                        <FormControl>
-                          <Input placeholder="seu.email@empresa.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="department"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Departamento</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Seu departamento" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="sector"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Setor (Opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Seu setor" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Telefone (Opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="(00) 00000-0000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Observações (Opcional)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Adicione qualquer informação adicional sobre seu pedido" 
-                          {...field} 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsCheckingOut(false)}
+                className="mb-6"
+              >
+                <ChevronLeft size={16} className="mr-1" />
+                Voltar para o Carrinho
+              </Button>
+              
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome Completo</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Seu nome" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <h3 className="text-lg font-bold mb-2">Resumo do Pedido</h3>
-                  <ul className="space-y-2 mb-4">
-                    {items.map(item => (
-                      <li key={item.id} className="flex justify-between">
-                        <span>{item.name} x {item.quantity}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="text-right font-bold">
-                    Total de itens: {items.reduce((sum, item) => sum + item.quantity, 0)}
-                  </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name="matricula"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Matrícula</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Sua matrícula" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>E-mail Corporativo</FormLabel>
+                              <FormControl>
+                                <Input placeholder="seu.email@empresa.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="department"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Departamento</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Seu departamento" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="sector"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Setor (Opcional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Seu setor" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Telefone (Opcional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="(00) 00000-0000" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="notes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Observações (Opcional)</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Adicione qualquer informação adicional sobre seu pedido" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="pt-4 flex justify-end">
+                        <Button 
+                          type="submit" 
+                          disabled={orderMutation.isPending}
+                          className="px-8 bg-blue-700 hover:bg-blue-800"
+                        >
+                          {orderMutation.isPending ? 'Processando...' : (
+                            <>
+                              <CreditCard size={16} className="mr-2" />
+                              Finalizar Pedido
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+              
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertDescription>
+                  <p className="text-sm">
+                    <strong>Nota:</strong> Cada colaborador pode fazer no máximo 4 pedidos por mês.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            </div>
+            
+            <div className="md:col-span-1">
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 sticky top-24">
+                <h3 className="text-xl font-bold mb-4 text-blue-800">Resumo do Pedido</h3>
+                <div className="space-y-3 mb-4">
+                  {items.map(item => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span>{item.name} x {item.quantity}</span>
+                      <span className="font-medium">
+                        R$ {((item.price || 0) * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
                 
-                <div className="flex justify-end gap-4">
-                  <Button type="button" variant="outline" onClick={() => setIsCheckingOut(false)}>
-                    Cancelar
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={orderMutation.isPending}
-                    className="px-8"
-                  >
-                    {orderMutation.isPending ? 'Processando...' : 'Finalizar Pedido'}
-                  </Button>
+                <Separator className="my-4" />
+                
+                <div className="flex justify-between font-bold text-lg text-blue-900">
+                  <span>Total</span>
+                  <span>R$ {getTotalPrice().toFixed(2)}</span>
                 </div>
-              </form>
-            </Form>
+              </div>
+            </div>
           </div>
         ) : (
           <>
             <div className="space-y-4 mb-8">
               {items.map(item => (
-                <Card key={item.id} className="overflow-hidden">
+                <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
                   <CardContent className="p-0">
                     <div className="flex items-center p-4">
-                      <div className="w-16 h-16 bg-gray-100 rounded mr-4 flex-shrink-0">
+                      <div className="w-16 h-16 bg-gray-100 rounded-md mr-4 flex-shrink-0 overflow-hidden">
                         {item.image_url ? (
                           <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
@@ -296,7 +328,13 @@ const Cart = () => {
                         )}
                       </div>
                       <div className="flex-grow">
-                        <h3 className="font-semibold">{item.name}</h3>
+                        <h3 className="font-semibold text-blue-900">{item.name}</h3>
+                        <p className="text-sm text-gray-500">
+                          Preço unitário: R$ {(item.price || 0).toFixed(2)}
+                        </p>
+                        <p className="font-medium text-blue-800">
+                          Subtotal: R$ {((item.price || 0) * item.quantity).toFixed(2)}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center">
@@ -324,7 +362,7 @@ const Cart = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeItem(item.id)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 size={18} />
                         </Button>
@@ -335,22 +373,46 @@ const Cart = () => {
               ))}
             </div>
             
-            <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
-              <Button variant="outline" onClick={() => navigate('/')}>
-                Continuar Comprando
-              </Button>
+            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
+              <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+                <div className="mb-4 md:mb-0">
+                  <h3 className="text-xl font-bold text-blue-800">Resumo</h3>
+                  <p className="text-gray-600">Total de itens: {items.reduce((sum, item) => sum + item.quantity, 0)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-gray-600">Subtotal</p>
+                  <p className="text-2xl font-bold text-blue-900">R$ {getTotalPrice().toFixed(2)}</p>
+                </div>
+              </div>
               
-              <div>
-                <Button variant="destructive" onClick={() => clearCart()} className="mr-2">
-                  Limpar Carrinho
+              <div className="flex flex-col sm:flex-row justify-between gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/')}
+                  className="flex items-center"
+                >
+                  <ChevronLeft size={16} className="mr-1" />
+                  Continuar Comprando
                 </Button>
-                <Button onClick={() => setIsCheckingOut(true)}>
-                  Finalizar Pedido
-                </Button>
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => clearCart()}
+                  >
+                    Limpar Carrinho
+                  </Button>
+                  <Button 
+                    onClick={() => setIsCheckingOut(true)}
+                    className="bg-blue-700 hover:bg-blue-800"
+                  >
+                    Finalizar Pedido
+                  </Button>
+                </div>
               </div>
             </div>
             
-            <Alert className="bg-blue-50 border-blue-200 mt-4">
+            <Alert className="bg-blue-50 border-blue-200">
               <AlertDescription>
                 <p className="text-sm">
                   <strong>Nota:</strong> Cada colaborador pode fazer no máximo 4 pedidos por mês.

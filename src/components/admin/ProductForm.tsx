@@ -28,9 +28,10 @@ interface ProductFormProps {
   isSubmitting: boolean;
   submitButtonText: string;
   onSubmit: (values: ProductFormValues) => void;
+  onCancel?: () => void;
 }
 
-const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit }: ProductFormProps) => {
+const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit, onCancel }: ProductFormProps) => {
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: defaultValues || {
@@ -51,7 +52,7 @@ const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit }
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome do Produto</FormLabel>
+              <FormLabel className="font-medium">Nome do Produto</FormLabel>
               <FormControl>
                 <Input placeholder="Nome do produto" {...field} />
               </FormControl>
@@ -64,7 +65,7 @@ const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit }
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Categoria</FormLabel>
+              <FormLabel className="font-medium">Categoria</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
@@ -89,7 +90,7 @@ const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit }
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrição</FormLabel>
+              <FormLabel className="font-medium">Descrição</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Descrição detalhada do produto" 
@@ -107,7 +108,7 @@ const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit }
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preço (R$)</FormLabel>
+                <FormLabel className="font-medium">Preço (R$)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -125,7 +126,7 @@ const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit }
             name="stock"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Estoque</FormLabel>
+                <FormLabel className="font-medium">Estoque</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -143,7 +144,7 @@ const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit }
           name="image_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>URL da Imagem (opcional)</FormLabel>
+              <FormLabel className="font-medium">URL da Imagem (opcional)</FormLabel>
               <FormControl>
                 <Input placeholder="https://..." {...field} />
               </FormControl>
@@ -151,10 +152,21 @@ const ProductForm = ({ defaultValues, isSubmitting, submitButtonText, onSubmit }
             </FormItem>
           )}
         />
-        <DialogFooter>
+        <DialogFooter className="pt-4">
+          {onCancel && (
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={onCancel} 
+              className="mr-2"
+            >
+              Cancelar
+            </Button>
+          )}
           <Button 
             type="submit" 
             disabled={isSubmitting}
+            className="bg-blue-700 hover:bg-blue-800"
           >
             {submitButtonText}
           </Button>

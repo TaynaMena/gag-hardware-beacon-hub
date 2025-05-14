@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from '@/components/ui/sonner';
 
 export interface CartItem {
   id: string;
@@ -16,6 +17,7 @@ interface CartContextType {
   clearCart: () => void;
   updateItemQuantity: (id: string, quantity: number) => void;
   getTotalItems: () => number;
+  getTotalPrice: () => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -57,16 +59,24 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         // Item exists, update quantity
         const updatedItems = [...currentItems];
         updatedItems[existingItemIndex].quantity += newItem.quantity;
+        toast.success(`${newItem.name} atualizado no carrinho (${updatedItems[existingItemIndex].quantity})`);
         return updatedItems;
       } else {
         // Item doesn't exist, add to cart
+        toast.success(`${newItem.name} adicionado ao carrinho!`);
         return [...currentItems, newItem];
       }
     });
   };
 
   const removeItem = (id: string) => {
-    setItems(currentItems => currentItems.filter(item => item.id !== id));
+    setItems(currentItems => {
+      const itemToRemove = currentItems.find(item => item.id === id);
+      if (itemToRemove) {
+        toast.info(`${itemToRemove.name} removido do carrinho`);
+      }
+      return currentItems.filter(item => item.id !== id);
+    });
   };
 
   const updateItemQuantity = (id: string, quantity: number) => {
@@ -84,10 +94,18 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const clearCart = () => {
     setItems([]);
+    toast.info('Carrinho esvaziado');
   };
 
   const getTotalItems = () => {
     return items.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const getTotalPrice = () => {
+    return items.reduce((total, item) => {
+      const itemPrice = item.price || 0;
+      return total + (itemPrice * item.quantity);
+    }, 0);
   };
 
   const value = {
@@ -96,7 +114,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     removeItem,
     updateItemQuantity,
     clearCart,
-    getTotalItems
+    getTotalItems,
+    getTotalPrice
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
