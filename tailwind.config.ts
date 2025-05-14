@@ -71,12 +71,12 @@ export default {
 					'purple-light': '#D6BCFA',  // Light Purple
 					gray: '#8E9196',  // Neutral Gray
 					dark: '#1A1F2C',   // Dark Purple
-					// Adding the blue-dark color to fix the error
-					'blue-dark': '#1A1F2C',  // Using dark color for blue-dark
-					blue: '#9b87f5',  // Using primary purple for blue
+					'blue-dark': '#01036d',  // Dark Blue (from image)
+					blue: '#0000ff',  // Brand Blue (from image)
 					green: '#4CAF50',  // Adding a green color for inStock badges
 					cyan: '#00B8D9',  // Adding cyan color
-				}
+				},
+				'navy-dark': '#01036d',  // Dark Blue (from image)
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

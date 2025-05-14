@@ -4,24 +4,23 @@ import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import { toast } from '@/components/ui/sonner';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Product } from '@/types/Product';
-import { getAllProducts, getProductsByCategory } from '@/services/productService';
-import { useCart } from '@/contexts/CartContext';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { Product, ProductCategory } from '@/types/Product';
+import { getAllProducts, getProductsByCategory } from '@/services/productService';
+import { useCart } from '@/contexts/CartContext';
 
 const Banner = () => (
-  <div className="w-full bg-gradient-to-r from-gag-blue to-gag-cyan rounded-lg shadow-lg p-8 md:p-12 mb-12">
+  <div className="w-full bg-blue-700 rounded-lg shadow-lg p-8 md:p-12 mb-12">
     <h1 className="text-white text-4xl md:text-5xl font-bold mb-4">
-      GAG Hardware Hub
+      Ofertas especiais para colaboradores GAG
     </h1>
-    <p className="text-white/90 text-xl md:text-2xl mb-6">
-      Sua fonte confiável de componentes de hardware de alta qualidade
+    <p className="text-blue-200 text-xl md:text-2xl mb-6">
+      Aproveite descontos exclusivos em produtos de hardware. Monitores, teclados, mouses e muito mais com preços especiais para você!
     </p>
-    <Button size="lg" className="bg-white text-gag-blue hover:bg-gray-100">
-      Explore Nossa Coleção
+    <Button size="lg" className="bg-white text-blue-700 hover:bg-gray-100">
+      Ver ofertas
     </Button>
   </div>
 );
@@ -48,45 +47,37 @@ const ProductCard = ({ product }: { product: Product }) => {
   };
   
   return (
-    <div className="hardware-card flex flex-col h-full">
-      <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
-        {product.image_url ? (
-          <img 
-            src={product.image_url} 
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-            Sem imagem
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="relative">
+        {product.stock > 0 && (
+          <div className="absolute top-2 right-2">
+            <Badge className={isLowStock ? "bg-amber-400" : "bg-green-500"}>
+              {product.stock} em estoque
+            </Badge>
           </div>
         )}
-      </div>
-      <div className="p-4 flex-grow flex flex-col">
-        <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
-        
-        <div className="flex items-center justify-between mb-2 mt-auto">
-          <div>
-            {isOutOfStock ? (
-              <Badge variant="destructive">Sem Estoque</Badge>
-            ) : isLowStock ? (
-              <Badge variant="outline" className="border-amber-500 text-amber-500">
-                Estoque Baixo: {product.stock}
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="border-gag-green text-gag-green">
-                Em Estoque: {product.stock}
-              </Badge>
-            )}
-          </div>
-          <span className="text-sm text-gag-purple font-medium">{product.category}</span>
+        <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+          {product.image_url ? (
+            <img 
+              src={product.image_url} 
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+              Sem imagem
+            </div>
+          )}
         </div>
+      </div>
+      <div className="p-4">
+        <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
         
         <Button 
           onClick={handleAddToCart}
           disabled={isOutOfStock}
           variant={isOutOfStock ? "outline" : "default"}
-          className="mt-2 w-full"
+          className="w-full mt-2"
         >
           {isOutOfStock ? 'Fora de Estoque' : 'Adicionar ao Carrinho'}
         </Button>
@@ -94,6 +85,24 @@ const ProductCard = ({ product }: { product: Product }) => {
     </div>
   );
 };
+
+const CategoryButton = ({ 
+  category, 
+  activeCategory, 
+  onClick 
+}: { 
+  category: string; 
+  activeCategory: string; 
+  onClick: () => void;
+}) => (
+  <Button
+    variant={activeCategory === category ? "default" : "outline"}
+    onClick={onClick}
+    className={`w-full ${activeCategory === category ? "bg-blue-700" : ""}`}
+  >
+    {category}
+  </Button>
+);
 
 const Home = () => {
   const [activeCategory, setActiveCategory] = useState<string>('Todos');
@@ -124,36 +133,57 @@ const Home = () => {
     <Layout>
       <Banner />
       
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-6">Nossos Produtos</h2>
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Categories Sidebar */}
+        <div className="w-full md:w-64">
+          <h2 className="text-2xl font-bold text-blue-800 mb-4">Categorias</h2>
+          <div className="flex flex-col space-y-2">
+            <CategoryButton 
+              category="Todos" 
+              activeCategory={activeCategory} 
+              onClick={() => setActiveCategory('Todos')} 
+            />
+            <CategoryButton 
+              category="Monitores" 
+              activeCategory={activeCategory} 
+              onClick={() => setActiveCategory('Monitores')} 
+            />
+            <CategoryButton 
+              category="Periféricos" 
+              activeCategory={activeCategory} 
+              onClick={() => setActiveCategory('Periféricos')} 
+            />
+            <CategoryButton 
+              category="Componentes" 
+              activeCategory={activeCategory} 
+              onClick={() => setActiveCategory('Componentes')} 
+            />
+          </div>
+        </div>
         
-        <Tabs defaultValue="Todos" value={activeCategory} onValueChange={setActiveCategory}>
-          <TabsList className="mb-8">
-            <TabsTrigger value="Todos">Todos</TabsTrigger>
-            <TabsTrigger value="Monitores">Monitores</TabsTrigger>
-            <TabsTrigger value="Periféricos">Periféricos</TabsTrigger>
-            <TabsTrigger value="Componentes">Componentes</TabsTrigger>
-          </TabsList>
+        {/* Products Grid */}
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold text-blue-800 mb-6">
+            {activeCategory === 'Todos' ? 'Todos os Produtos' : activeCategory}
+          </h2>
           
-          <TabsContent value={activeCategory} className="mt-0">
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gag-purple mx-auto"></div>
-                <p className="mt-4 text-gray-600">Carregando produtos...</p>
-              </div>
-            ) : filteredProducts.length > 0 ? (
-              <div className="hardware-grid">
-                {filteredProducts.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-600">Nenhum produto encontrado nesta categoria.</p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-700 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Carregando produtos...</p>
+            </div>
+          ) : filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Nenhum produto encontrado nesta categoria.</p>
+            </div>
+          )}
+        </div>
       </div>
     </Layout>
   );

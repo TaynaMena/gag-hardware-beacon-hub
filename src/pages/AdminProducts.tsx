@@ -1,341 +1,323 @@
 
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import Layout from '@/components/Layout';
-import { getAllProducts, createProduct, updateProduct, deleteProduct } from '@/services/productService';
-import { Product } from '@/types/Product';
+import { useState, useEffect } from "react";
+import Layout from "@/components/Layout";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+  getAllProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "@/services/productService";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/components/ui/sonner';
-import { AlertTriangle, Pencil, Trash2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-
-const productSchema = z.object({
-  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  category: z.enum(['Monitores', 'Periféricos', 'Componentes'], {
-    required_error: 'Escolha uma categoria',
-  }),
-  stock: z.coerce.number().min(0, 'Estoque não pode ser negativo'),
-  description: z.string().optional(),
-  image_url: z.string().url('URL inválida').optional().or(z.literal('')),
-});
-
-type ProductFormValues = z.infer<typeof productSchema>;
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
+import { Pencil, Trash2, Plus, X, Save } from "lucide-react";
+import { ProductCategory, NewProduct, Product } from "@/types/Product";
 
 const AdminProducts = () => {
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState<NewProduct>({
+    name: "",
+    category: "Monitores",
+    description: "",
+    stock: 0,
+    image_url: ""
+  });
+  
   const queryClient = useQueryClient();
   
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: '',
-      category: 'Componentes',
-      stock: 0,
-      description: '',
-      image_url: '',
-    },
+  const { data: products, isLoading, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: getAllProducts,
   });
-  
-  const { data: products = [], isLoading, error } = useQuery({
-    queryKey: ['products'],
-    queryFn: getAllProducts
-  });
-  
+
   const createMutation = useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      form.reset();
-      toast.success('Produto criado com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Produto criado com sucesso!");
+      resetForm();
     },
-    onError: (error) => {
-      toast.error(`Erro ao criar produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    onError: (error: Error) => {
+      toast.error(`Erro ao criar produto: ${error.message}`);
     },
   });
-  
+
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Product> }) => updateProduct(id, data),
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<NewProduct> }) =>
+      updateProduct(id, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      form.reset();
-      setEditingProduct(null);
-      toast.success('Produto atualizado com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Produto atualizado com sucesso!");
+      setEditingId(null);
     },
-    onError: (error) => {
-      toast.error(`Erro ao atualizar produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    onError: (error: Error) => {
+      toast.error(`Erro ao atualizar produto: ${error.message}`);
     },
   });
-  
+
   const deleteMutation = useMutation({
     mutationFn: deleteProduct,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Produto excluído com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Produto excluído com sucesso!");
     },
-    onError: (error) => {
-      toast.error(`Erro ao excluir produto: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    onError: (error: Error) => {
+      toast.error(`Erro ao excluir produto: ${error.message}`);
     },
   });
-  
-  const onSubmit = (values: ProductFormValues) => {
-    if (editingProduct) {
-      updateMutation.mutate({
-        id: editingProduct.id,
-        data: values,
-      });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "stock" ? parseInt(value) || 0 : value,
+    }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setForm((prev) => ({ ...prev, category: value as ProductCategory }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Make sure required fields are filled
+    if (!form.name || !form.category) {
+      toast.error("Por favor preencha todos os campos obrigatórios.");
+      return;
+    }
+    
+    if (editingId) {
+      updateMutation.mutate({ id: editingId, updates: form });
     } else {
-      createMutation.mutate(values);
+      createMutation.mutate(form);
     }
   };
-  
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
-    form.reset({
+
+  const startEditing = (product: Product) => {
+    setEditingId(product.id);
+    setForm({
       name: product.name,
       category: product.category,
+      description: product.description,
       stock: product.stock,
-      description: product.description || '',
-      image_url: product.image_url || '',
+      image_url: product.image_url
     });
+    setShowForm(true);
   };
-  
-  const handleDeleteProduct = (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este produto?')) {
-      deleteMutation.mutate(id);
-    }
-  };
-  
-  const handleCancelEdit = () => {
-    setEditingProduct(null);
-    form.reset();
+
+  const resetForm = () => {
+    setForm({
+      name: "",
+      category: "Monitores",
+      description: "",
+      stock: 0,
+      image_url: ""
+    });
+    setEditingId(null);
+    setShowForm(false);
   };
 
   if (error) {
     return (
       <Layout>
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Erro ao carregar produtos. Por favor, tente novamente mais tarde.
-          </AlertDescription>
-        </Alert>
+        <div className="p-6 bg-red-50 text-red-700 rounded-lg">
+          Erro ao carregar produtos: {(error as Error).message}
+        </div>
       </Layout>
     );
   }
-  
+
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Gerenciamento de Produtos</h1>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {editingProduct ? 'Editar Produto' : 'Adicionar Produto'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
+      <div className="mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Gerenciamento de Produtos</CardTitle>
+            <Button
+              onClick={() => setShowForm(!showForm)}
+              variant={showForm ? "outline" : "default"}
+            >
+              {showForm ? (
+                <>
+                  <X className="mr-2 h-4 w-4" />
+                  Cancelar
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Novo Produto
+                </>
+              )}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {showForm && (
+              <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium mb-1">Nome do Produto*</label>
+                    <Input
+                      id="name"
                       name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome do Produto</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Nome do produto" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      value={form.name}
+                      onChange={handleInputChange}
+                      placeholder="Nome do produto"
+                      required
                     />
-                    
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Categoria</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma categoria" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Monitores">Monitores</SelectItem>
-                              <SelectItem value="Periféricos">Periféricos</SelectItem>
-                              <SelectItem value="Componentes">Componentes</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
+                  </div>
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-medium mb-1">Categoria*</label>
+                    <Select
+                      value={form.category}
+                      onValueChange={handleSelectChange}
+                    >
+                      <SelectTrigger id="category">
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Monitores">Monitores</SelectItem>
+                        <SelectItem value="Periféricos">Periféricos</SelectItem>
+                        <SelectItem value="Componentes">Componentes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label htmlFor="stock" className="block text-sm font-medium mb-1">Quantidade em Estoque*</label>
+                    <Input
+                      id="stock"
                       name="stock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Estoque</FormLabel>
-                          <FormControl>
-                            <Input type="number" min="0" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      type="number"
+                      min="0"
+                      value={form.stock}
+                      onChange={handleInputChange}
+                      placeholder="Quantidade em estoque"
+                      required
                     />
-                    
-                    <FormField
-                      control={form.control}
+                  </div>
+                  <div>
+                    <label htmlFor="image_url" className="block text-sm font-medium mb-1">URL da Imagem</label>
+                    <Input
+                      id="image_url"
                       name="image_url"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>URL da Imagem</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://exemplo.com/imagem.jpg" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      value={form.image_url || ""}
+                      onChange={handleInputChange}
+                      placeholder="URL da imagem do produto"
                     />
-                    
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Descrição</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Descrição do produto"
-                              className="min-h-[100px]"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex justify-end gap-2">
-                      {editingProduct && (
-                        <Button type="button" variant="outline" onClick={handleCancelEdit}>
-                          Cancelar
-                        </Button>
-                      )}
-                      <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                        {editingProduct 
-                          ? (updateMutation.isPending ? 'Salvando...' : 'Atualizar') 
-                          : (createMutation.isPending ? 'Salvando...' : 'Salvar')}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Produtos Cadastrados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gag-purple mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Carregando produtos...</p>
                   </div>
-                ) : products.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-600">Nenhum produto cadastrado.</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Categoria</TableHead>
-                          <TableHead>Estoque</TableHead>
-                          <TableHead className="text-right">Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {products.map(product => (
-                          <TableRow key={product.id}>
-                            <TableCell className="font-medium">{product.name}</TableCell>
-                            <TableCell>{product.category}</TableCell>
-                            <TableCell>
-                              {product.stock === 0 ? (
-                                <span className="text-red-500 font-medium">Sem estoque</span>
-                              ) : product.stock < 3 ? (
-                                <span className="text-amber-500 font-medium">Baixo: {product.stock}</span>
-                              ) : (
-                                <span>{product.stock}</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleEditProduct(product)}
-                              >
-                                <Pencil size={16} />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => handleDeleteProduct(product.id)}
-                              >
-                                <Trash2 size={16} />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                </div>
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium mb-1">Descrição</label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={form.description}
+                    onChange={handleInputChange}
+                    placeholder="Descrição do produto"
+                    rows={4}
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {editingId ? "Atualizar Produto" : "Salvar Produto"}
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {isLoading ? (
+              <div className="text-center py-10">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gag-purple mx-auto"></div>
+                <p className="mt-4 text-gray-600">Carregando produtos...</p>
+              </div>
+            ) : products && products.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-4">Nome</th>
+                      <th className="text-left py-2 px-4">Categoria</th>
+                      <th className="text-center py-2 px-4">Estoque</th>
+                      <th className="text-right py-2 px-4">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((product) => (
+                      <tr key={product.id} className="border-b hover:bg-gray-50">
+                        <td className="py-2 px-4">
+                          <div className="flex items-center gap-2">
+                            {product.image_url && (
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="h-10 w-10 object-cover rounded"
+                              />
+                            )}
+                            <span>{product.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">{product.category}</td>
+                        <td className="py-2 px-4 text-center">
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              product.stock === 0
+                                ? "bg-red-100 text-red-800"
+                                : product.stock < 3
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {product.stock}
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => startEditing(product)}
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteMutation.mutate(product.id)}
+                            title="Excluir"
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-10">
+                <p className="text-gray-500">
+                  Nenhum produto cadastrado. Clique em "Novo Produto" para adicionar.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );
