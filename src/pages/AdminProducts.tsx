@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/sonner';
 import { Pencil, Trash2, Plus, Package, ShoppingBag, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { getAllProducts, createProduct, updateProduct, deleteProduct } from '@/services/productService';
-import { ProductCategory } from '@/types/Product';
+import { ProductCategory, NewProduct } from '@/types/Product';
 
 // Form schema for adding/editing products
 const productSchema = z.object({
@@ -124,20 +124,16 @@ const AdminProducts = () => {
   
   // Update product - Fix the type issue here
   const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: any }) => {
-      // Ensure all required fields are present
-      if (updates && typeof updates === 'object') {
-        // Make sure name is always provided as it's required by NewProduct type
-        const validUpdates = {
-          name: updates.name || '',  // Default to empty string if missing
-          category: updates.category as ProductCategory,
-          description: updates.description || '',
-          stock: updates.stock ?? 0,
-          image_url: updates.image_url
-        };
-        return updateProduct(id, validUpdates);
-      }
-      throw new Error('Invalid update data');
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<ProductFormValues> }) => {
+      // Create a complete NewProduct object with all required fields
+      const validUpdates: NewProduct = {
+        name: updates.name || editingProduct.name, // Ensure name is always present
+        category: (updates.category as ProductCategory) || editingProduct.category,
+        description: updates.description || editingProduct.description || '',
+        stock: updates.stock ?? editingProduct.stock,
+        image_url: updates.image_url || editingProduct.image_url
+      };
+      return updateProduct(id, validUpdates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
