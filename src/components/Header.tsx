@@ -17,8 +17,11 @@ const Header: React.FC = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <span className="text-blue-400 font-bold text-xl mr-1">GAG</span>
-              <span className="text-white font-bold text-xl">Hardware</span>
+              <img 
+                src="/lovable-uploads/21f3ed71-8d86-46b6-a366-7dd0be624a6c.png" 
+                alt="GAG Hardware" 
+                className="h-10"
+              />
             </Link>
           </div>
 
