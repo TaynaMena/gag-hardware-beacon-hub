@@ -20,9 +20,9 @@ export const useProductsUpload = () => {
       // Create unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `products/${fileName}`;
+      const filePath = `${fileName}`;
       
-      // Upload file
+      // Upload file to the "products" bucket
       const { error: uploadError } = await supabase.storage
         .from('products')
         .upload(filePath, file);
@@ -33,7 +33,7 @@ export const useProductsUpload = () => {
         return null;
       }
       
-      // Get public URL
+      // Get public URL from the "products" bucket
       const { data: publicUrlData } = supabase.storage
         .from('products')
         .getPublicUrl(filePath);

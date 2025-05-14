@@ -28,6 +28,7 @@ import {
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ProductCategory } from '@/types/Product';
+import { useProductsUpload } from '@/hooks/useProductsUpload';
 
 const productSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -48,7 +49,7 @@ const ProductForm = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const { uploadProductImage, isUploading } = useProductsUpload();
   
   const isEditing = !!id;
 
@@ -119,28 +120,6 @@ const ProductForm = () => {
     }
   };
 
-  // Upload image to Supabase Storage
-  const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-    const filePath = `products/${fileName}`;
-    
-    const { error: uploadError, data } = await supabase.storage
-      .from('products')
-      .upload(filePath, file);
-    
-    if (uploadError) {
-      throw new Error(`Erro no upload: ${uploadError.message}`);
-    }
-
-    // Get public URL
-    const { data: publicURL } = supabase.storage
-      .from('products')
-      .getPublicUrl(filePath);
-    
-    return publicURL.publicUrl;
-  };
-
   // Mutation to create or update product
   const mutation = useMutation({
     mutationFn: async (values: ProductFormData) => {
@@ -148,13 +127,13 @@ const ProductForm = () => {
       let imageUrl = imagePreview;
       
       if (imageFile) {
-        setIsUploading(true);
         try {
-          imageUrl = await uploadImage(imageFile);
+          imageUrl = await uploadProductImage(imageFile);
+          if (!imageUrl) {
+            throw new Error('Failed to upload image');
+          }
         } catch (error) {
           throw error;
-        } finally {
-          setIsUploading(false);
         }
       }
       
