@@ -1,0 +1,12 @@
+
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="4" fill="#1B1B1B"/>
+  <path d="M16 24C12.6863 24 10 21.3137 10 18C10 14.6863 12.6863 12 16 12C19.3137 12 22 14.6863 22 18C22 21.3137 19.3137 24 16 24ZM16 16C14.8954 16 14 16.8954 14 18C14 19.1046 14.8954 20 16 20C17.1046 20 18 19.1046 18 18C18 16.8954 17.1046 16 16 16Z" fill="#0000FF"/>
+  <!-- Pixel dots -->
+  <rect x="6" y="18" width="2" height="2" fill="#0000FF"/>
+  <rect x="4" y="18" width="2" height="2" fill="#0000FF"/>
+  <rect x="5" y="16" width="2" height="2" fill="#0000FF"/>
+  <rect x="6" y="14" width="2" height="2" fill="#0000FF"/>
+  <rect x="7" y="12" width="2" height="2" fill="#0000FF"/>
+  <rect x="8" y="10" width="2" height="2" fill="#0000FF"/>
+</svg>

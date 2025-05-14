@@ -63,13 +63,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Hardware hub custom colors
-				hub: {
-					blue: '#1A365D',
-					'blue-light': '#2A4365',
-					accent: '#4299E1',
-					gray: '#E2E8F0',
-					'gray-dark': '#718096',
+				// GAG brand colors
+				gag: {
+					blue: '#0000ff',  // Primary blue
+					'blue-dark': '#00006c',  // Dark blue
+					cyan: '#15f1ff',  // Cyan
+					white: '#ffffff',  // White
+					green: '#48ff17',  // Green
+					dark: '#1b1b1b',   // Dark color for backgrounds
 				}
 			},
 			borderRadius: {

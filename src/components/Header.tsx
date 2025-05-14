@@ -13,30 +13,29 @@ const Header: React.FC = () => {
   const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-gag-dark shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-hub-blue">GAG</span>
-              <span className="ml-2 text-xl text-hub-accent">Hardware Hub</span>
+              <img src="/logo/logo-white.svg" alt="GAG Hardware Hub" className="h-8" />
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium">
+            <Link to="/" className="text-white hover:text-gag-cyan font-medium">
               Home
             </Link>
-            <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium">
-              Products
+            <Link to="/" className="text-white hover:text-gag-cyan font-medium">
+              Produtos
             </Link>
-            <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium">
-              Deals
+            <Link to="/" className="text-white hover:text-gag-cyan font-medium">
+              Ofertas
             </Link>
-            <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium">
-              Support
+            <Link to="/" className="text-white hover:text-gag-cyan font-medium">
+              Suporte
             </Link>
           </nav>
 
@@ -46,21 +45,21 @@ const Header: React.FC = () => {
               variant="ghost" 
               size="icon" 
               onClick={toggleSearch}
-              className="text-hub-blue-light hover:text-hub-accent"
+              className="text-white hover:text-gag-cyan"
             >
               <Search className="h-5 w-5" />
             </Button>
             <Button 
               variant="ghost" 
               size="icon"
-              className="text-hub-blue-light hover:text-hub-accent"
+              className="text-white hover:text-gag-cyan"
             >
               <ShoppingCart className="h-5 w-5" />
             </Button>
             <Button 
               variant="ghost" 
               size="icon"
-              className="text-hub-blue-light hover:text-hub-accent"
+              className="text-white hover:text-gag-cyan"
             >
               <User className="h-5 w-5" />
             </Button>
@@ -72,14 +71,14 @@ const Header: React.FC = () => {
               variant="ghost" 
               size="icon" 
               onClick={toggleSearch}
-              className="text-hub-blue-light"
+              className="text-white"
             >
               <Search className="h-5 w-5" />
             </Button>
             <Button 
               variant="ghost" 
               size="icon"
-              className="text-hub-blue-light"
+              className="text-white"
             >
               <ShoppingCart className="h-5 w-5" />
             </Button>
@@ -87,7 +86,7 @@ const Header: React.FC = () => {
               variant="ghost" 
               size="icon" 
               onClick={toggleMenu}
-              className="text-hub-blue-light"
+              className="text-white"
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -96,36 +95,36 @@ const Header: React.FC = () => {
 
         {/* Search Bar (Both Mobile and Desktop) */}
         {isSearchOpen && (
-          <div className="py-4 border-t border-gray-100 animate-fade-in">
+          <div className="py-4 border-t border-gag-blue-dark animate-fade-in">
             <div className="flex items-center">
               <Input 
                 type="text" 
-                placeholder="Search for products..." 
+                placeholder="Buscar produtos..." 
                 className="flex-grow mr-4"
               />
-              <Button>Search</Button>
+              <Button className="bg-gag-blue hover:bg-gag-blue-dark text-white">Buscar</Button>
             </div>
           </div>
         )}
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-100 animate-fade-in">
+          <div className="md:hidden py-4 border-t border-gag-blue-dark animate-fade-in">
             <nav className="flex flex-col space-y-4">
-              <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium px-2 py-1">
+              <Link to="/" className="text-white hover:text-gag-cyan font-medium px-2 py-1">
                 Home
               </Link>
-              <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium px-2 py-1">
-                Products
+              <Link to="/" className="text-white hover:text-gag-cyan font-medium px-2 py-1">
+                Produtos
               </Link>
-              <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium px-2 py-1">
-                Deals
+              <Link to="/" className="text-white hover:text-gag-cyan font-medium px-2 py-1">
+                Ofertas
               </Link>
-              <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium px-2 py-1">
-                Support
+              <Link to="/" className="text-white hover:text-gag-cyan font-medium px-2 py-1">
+                Suporte
               </Link>
-              <Link to="/" className="text-hub-blue-light hover:text-hub-accent font-medium px-2 py-1">
-                My Account
+              <Link to="/" className="text-white hover:text-gag-cyan font-medium px-2 py-1">
+                Minha Conta
               </Link>
             </nav>
           </div>
