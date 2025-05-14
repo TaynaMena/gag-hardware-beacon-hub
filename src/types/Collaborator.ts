@@ -7,5 +7,5 @@ export interface Collaborator {
   sector?: string;
   phone?: string;
   created_at?: string;
-  password_hash?: string; // Added this field to fix TypeScript errors
+  password_hash?: string | null;
 }

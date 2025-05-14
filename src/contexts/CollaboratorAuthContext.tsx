@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -126,7 +125,7 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
       localStorage.setItem('collaborator', JSON.stringify(collaboratorData));
       
       // Fetch monthly order count
-      await fetchMonthlyOrderCount(collaboratorData.id as string);
+      await fetchMonthlyOrderCount(collaboratorData.id);
       
       toast({
         description: `Bem-vindo, ${collaboratorData.name}!`,
