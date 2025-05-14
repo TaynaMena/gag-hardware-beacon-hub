@@ -16,6 +16,7 @@ export type Database = {
           id: string
           matricula: string
           name: string
+          password_hash: string | null
           phone: string | null
           sector: string | null
         }
@@ -25,6 +26,7 @@ export type Database = {
           id?: string
           matricula: string
           name: string
+          password_hash?: string | null
           phone?: string | null
           sector?: string | null
         }
@@ -34,6 +36,7 @@ export type Database = {
           id?: string
           matricula?: string
           name?: string
+          password_hash?: string | null
           phone?: string | null
           sector?: string | null
         }
