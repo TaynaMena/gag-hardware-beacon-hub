@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -92,7 +91,7 @@ export const CollaboratorAuthProvider: React.FC<CollaboratorAuthProviderProps> =
       // First check if collaborator exists
       const { data: collaboratorData, error: collaboratorError } = await supabase
         .from('collaborators')
-        .select('*')
+        .select('*, password_hash')  // Explicitly select password_hash
         .eq('matricula', matricula)
         .single();
 
