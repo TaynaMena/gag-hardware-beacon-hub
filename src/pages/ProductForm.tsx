@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/AdminLayout';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/sonner';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import { Form } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProductsUpload } from '@/hooks/useProductsUpload';
 import { productSchema, ProductFormData } from '@/schemas/productFormSchema';
@@ -31,7 +31,7 @@ const ProductForm = () => {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
-      category: 'Componentes' as ProductCategory, // Fixed: Type assertion to ensure proper type
+      category: 'Componentes' as ProductCategory,
       description: '',
       price: 0,
       stock: 0,
@@ -55,7 +55,7 @@ const ProductForm = () => {
       // Pre-fill form with existing data
       form.reset({
         name: data.name,
-        category: data.category as ProductCategory, // Fixed: Type assertion to ensure proper type
+        category: data.category as ProductCategory,
         description: data.description || '',
         price: data.price,
         stock: data.stock,
