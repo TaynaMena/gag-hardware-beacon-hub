@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Pencil, Trash2, Plus } from 'lucide-react';
-import { ProductFormValues } from '@/schemas/productFormSchema';
+import { ProductFormData, ProductFormValues } from '@/schemas/productFormSchema';
 
 interface ProductListProps {
   products: Product[];
@@ -22,7 +22,7 @@ interface ProductListProps {
   updateMutation: {
     mutate: (data: { id: string; updates: Partial<ProductFormValues> }) => void;
     isPending: boolean;
-  };
+    };
   onSubmit: (values: ProductFormValues) => void;
 }
 
