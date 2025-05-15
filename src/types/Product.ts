@@ -1,11 +1,17 @@
 
 export type ProductCategory = "Monitores" | "Periféricos" | "Componentes";
 
+export interface CategoryObject {
+  name: string;
+  slug: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   category_id: string;
-  category?: string; // Adding back for backward compatibility
+  category?: string; // For backward compatibility
+  categories?: CategoryObject; // Adding this for the joined data from Supabase
   description: string;
   stock: number;
   price: number;
@@ -17,7 +23,7 @@ export interface Product {
 export interface NewProduct {
   name: string;
   category_id: string;
-  category?: string; // Adding back for backward compatibility
+  category?: string; // For backward compatibility
   description: string;
   stock: number;
   price: number;

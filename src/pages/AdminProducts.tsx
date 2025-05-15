@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,7 +48,7 @@ const AdminProducts = () => {
       // Add category field for backward compatibility
       const productsWithCategory = data.map(item => ({
         ...item,
-        category: item.category || item.categories?.name || "Sem categoria"
+        category: item.category || (item.categories?.name) || "Sem categoria"
       }));
       
       return productsWithCategory as Product[];

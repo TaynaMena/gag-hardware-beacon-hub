@@ -16,7 +16,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
   // Transform the data to include category name for backward compatibility
   const productsWithCategory = data.map(item => ({
     ...item,
-    category: item.category || item.categories?.name || "Sem categoria"
+    category: item.category || (item.categories?.name) || "Sem categoria"
   }));
 
   return productsWithCategory as Product[];
@@ -36,7 +36,7 @@ export const getProductsByCategory = async (categoryId: string): Promise<Product
   // Transform the data to include category name for backward compatibility
   const productsWithCategory = data.map(item => ({
     ...item,
-    category: item.category || item.categories?.name || "Sem categoria"
+    category: item.category || (item.categories?.name) || "Sem categoria"
   }));
 
   return productsWithCategory as Product[];
@@ -57,14 +57,14 @@ export const getProductById = async (id: string): Promise<Product> => {
   // Add category field for backward compatibility
   const productWithCategory = {
     ...data,
-    category: data.category || data.categories?.name || "Sem categoria"
+    category: data.category || (data.categories?.name) || "Sem categoria"
   };
 
   return productWithCategory as Product;
 };
 
 export const createProduct = async (product: NewProduct): Promise<Product> => {
-  // Ensure we have both category and category_id for backward compatibility
+  // Ensure we have category field for backward compatibility
   const productData = { 
     ...product,
     category: product.category || "Sem categoria" // Ensure category is present for database

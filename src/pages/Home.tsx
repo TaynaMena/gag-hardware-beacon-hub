@@ -125,7 +125,6 @@ const Home = () => {
   const filteredProducts = activeCategory === 'Todos' 
     ? allProducts 
     : allProducts.filter(product => 
-        product.categories?.name === activeCategory || 
         product.category === activeCategory
       );
 

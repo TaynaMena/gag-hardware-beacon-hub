@@ -50,7 +50,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products, onEdit, onDelet
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{product.categories?.name || product.category || "Sem categoria"}</TableCell>
+                <TableCell>{product.category || "Sem categoria"}</TableCell>
                 <TableCell>
                   <span className="font-medium text-blue-900">
                     R$ {product.price ? product.price.toFixed(2) : '0.00'}

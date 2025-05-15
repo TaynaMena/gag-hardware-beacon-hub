@@ -38,7 +38,7 @@ export const ProductList: React.FC = () => {
         // Map the raw data to ensure category is available
         const typedProducts = data?.map(item => ({
           ...item,
-          category: item.category || item.categories?.name || "Sem categoria"
+          category: item.category || (item.categories?.name) || "Sem categoria"
         })) || [];
         
         setProducts(typedProducts);
@@ -68,8 +68,7 @@ export const ProductList: React.FC = () => {
     // Apply category filter
     if (selectedCategory) {
       result = result.filter(product => 
-        product.category === selectedCategory || 
-        product.categories?.name === selectedCategory
+        product.category === selectedCategory
       );
     }
     
@@ -89,7 +88,7 @@ export const ProductList: React.FC = () => {
   // Get unique categories
   const categories = Array.from(
     new Set(
-      products.map(p => p.categories?.name || p.category || "Sem categoria")
+      products.map(p => p.category || "Sem categoria")
     )
   );
   
@@ -154,7 +153,7 @@ export const ProductList: React.FC = () => {
               <CardContent className="p-4">
                 <h3 className="font-semibold text-blue-900 mb-1">{product.name}</h3>
                 <Badge variant="outline" className="mb-2">
-                  {product.categories?.name || product.category || "Sem categoria"}
+                  {product.category || "Sem categoria"}
                 </Badge>
                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                   {product.description || "Sem descrição disponível"}
