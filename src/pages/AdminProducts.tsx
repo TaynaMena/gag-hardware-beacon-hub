@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,7 +36,7 @@ const AdminProducts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, categories:category_id(name, slug)')
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -45,7 +44,13 @@ const AdminProducts = () => {
         throw error;
       }
       
-      return data as Product[];
+      // Add category field for backward compatibility
+      const productsWithCategory = data.map(item => ({
+        ...item,
+        category: item.category || item.categories?.name || "Sem categoria"
+      }));
+      
+      return productsWithCategory as Product[];
     },
   });
 
@@ -144,7 +149,7 @@ const AdminProducts = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.categories?.name || product.category || "Sem categoria"}</TableCell>
                     <TableCell>
                       <StockBadge stock={product.stock} />
                     </TableCell>

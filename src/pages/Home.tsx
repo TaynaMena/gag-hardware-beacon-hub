@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
@@ -125,7 +124,10 @@ const Home = () => {
 
   const filteredProducts = activeCategory === 'Todos' 
     ? allProducts 
-    : allProducts.filter(product => product.category === activeCategory);
+    : allProducts.filter(product => 
+        product.categories?.name === activeCategory || 
+        product.category === activeCategory
+      );
 
   if (error) {
     return (
@@ -145,7 +147,6 @@ const Home = () => {
       <Banner />
       
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Categories Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0">
           <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm sticky top-24">
             <h2 className="text-2xl font-bold text-blue-800 mb-4">Categorias</h2>
@@ -178,7 +179,6 @@ const Home = () => {
           </div>
         </div>
         
-        {/* Products Grid */}
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-blue-800 mb-6">
             {activeCategory === 'Todos' ? 'Todos os Produtos' : activeCategory}

@@ -13,7 +13,13 @@ export const getAllProducts = async (): Promise<Product[]> => {
     throw new Error(error.message);
   }
 
-  return (data as unknown) as Product[];
+  // Transform the data to include category name for backward compatibility
+  const productsWithCategory = data.map(item => ({
+    ...item,
+    category: item.category || item.categories?.name || "Sem categoria"
+  }));
+
+  return productsWithCategory as Product[];
 };
 
 export const getProductsByCategory = async (categoryId: string): Promise<Product[]> => {
@@ -27,7 +33,13 @@ export const getProductsByCategory = async (categoryId: string): Promise<Product
     throw new Error(error.message);
   }
 
-  return (data as unknown) as Product[];
+  // Transform the data to include category name for backward compatibility
+  const productsWithCategory = data.map(item => ({
+    ...item,
+    category: item.category || item.categories?.name || "Sem categoria"
+  }));
+
+  return productsWithCategory as Product[];
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
@@ -42,13 +54,25 @@ export const getProductById = async (id: string): Promise<Product> => {
     throw new Error(error.message);
   }
 
-  return (data as unknown) as Product;
+  // Add category field for backward compatibility
+  const productWithCategory = {
+    ...data,
+    category: data.category || data.categories?.name || "Sem categoria"
+  };
+
+  return productWithCategory as Product;
 };
 
 export const createProduct = async (product: NewProduct): Promise<Product> => {
+  // Ensure we have both category and category_id for backward compatibility
+  const productData = { 
+    ...product,
+    category: product.category || "Sem categoria" // Ensure category is present for database
+  };
+
   const { data, error } = await supabase
     .from("products")
-    .insert(product)
+    .insert(productData)
     .select()
     .single();
 
@@ -57,13 +81,16 @@ export const createProduct = async (product: NewProduct): Promise<Product> => {
     throw new Error(error.message);
   }
 
-  return (data as unknown) as Product;
+  return data as Product;
 };
 
 export const updateProduct = async (id: string, updates: ProductUpdate): Promise<Product> => {
+  // Ensure backward compatibility for category field
+  const updatesWithCategory = { ...updates };
+  
   const { data, error } = await supabase
     .from("products")
-    .update(updates)
+    .update(updatesWithCategory)
     .eq("id", id)
     .select()
     .single();
@@ -73,7 +100,7 @@ export const updateProduct = async (id: string, updates: ProductUpdate): Promise
     throw new Error(error.message);
   }
 
-  return (data as unknown) as Product;
+  return data as Product;
 };
 
 export const deleteProduct = async (id: string): Promise<void> => {
@@ -96,10 +123,14 @@ export const importProductsFromJSON = async (products: Omit<NewProduct, 'image_u
 
   for (let i = 0; i < products.length; i++) {
     try {
-      await createProduct({
+      // Ensure we pass both category and category_id
+      const productToCreate = {
         ...products[i],
+        category: products[i].category || "Sem categoria", // Ensure category is present for database
         image_url: undefined
-      });
+      };
+      
+      await createProduct(productToCreate);
       results.success++;
     } catch (error) {
       results.errors.push({

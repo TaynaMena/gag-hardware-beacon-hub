@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,7 @@ import { useProductsUpload } from '@/hooks/useProductsUpload';
 import { productSchema, ProductFormData } from '@/schemas/productFormSchema';
 import ProductFormFields from '@/components/admin/ProductFormFields';
 import ProductImageUpload from '@/components/admin/ProductImageUpload';
+import { getAllCategories } from '@/services/categoryService';
 
 const ProductForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,7 +46,7 @@ const ProductForm = () => {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, categories:category_id(name, slug)')
         .eq('id', id)
         .single();
       
@@ -87,10 +88,15 @@ const ProductForm = () => {
         }
       }
       
+      // Get the category name for backward compatibility
+      const categories = await getAllCategories();
+      const selectedCategory = categories.find(cat => cat.id === values.category_id);
+      
       // Ensure we have all required fields for the product
       const productData = {
         name: values.name,
         category_id: values.category_id,
+        category: selectedCategory?.name || "Sem categoria", // Add category for backward compatibility
         description: values.description || '',
         price: values.price,
         stock: values.stock,
