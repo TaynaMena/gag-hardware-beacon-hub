@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/components/ui/use-toast';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -128,16 +128,21 @@ const ProductForm = () => {
         queryClient.invalidateQueries({ queryKey: ['product', id] });
       }
       
-      toast.success(
-        result === 'created'
+      toast({
+        title: result === 'created' ? 'Produto cadastrado' : 'Produto atualizado',
+        description: result === 'created'
           ? 'Produto cadastrado com sucesso!'
           : 'Produto atualizado com sucesso!'
-      );
+      });
       
       navigate('/admin-produtos');
     },
     onError: (error: Error) => {
-      toast.error(`Erro: ${error.message}`);
+      toast({
+        title: "Erro",
+        description: `${error.message}`,
+        variant: "destructive",
+      });
     },
   });
 
@@ -153,10 +158,11 @@ const ProductForm = () => {
             variant="outline" 
             size="sm" 
             onClick={() => navigate('/admin-produtos')}
+            className="bg-gray-800 text-white border-gray-700 hover:bg-gray-700"
           >
             <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
           </Button>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             {isEditing ? 'Editar Produto' : 'Cadastrar Produto'}
           </h1>
         </div>
@@ -166,7 +172,7 @@ const ProductForm = () => {
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
           </div>
         ) : (
-          <div className="bg-white p-6 rounded-md shadow-sm border">
+          <div className="bg-gray-800 p-6 rounded-md shadow-sm border border-gray-700">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -187,6 +193,7 @@ const ProductForm = () => {
                   <Button 
                     type="submit" 
                     disabled={form.formState.isSubmitting || mutation.isPending || isUploading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {(form.formState.isSubmitting || mutation.isPending || isUploading) ? (
                       <>

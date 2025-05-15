@@ -41,9 +41,9 @@ const ProductImageUpload = ({
 
   return (
     <div className="space-y-2">
-      <Label>Imagem do Produto</Label>
+      <Label className="text-gray-200">Imagem do Produto</Label>
       
-      <div className="border-2 border-dashed rounded-md border-gray-300 p-4 transition-all hover:border-blue-400">
+      <div className="border-2 border-dashed rounded-md border-gray-700 p-4 transition-all hover:border-blue-500">
         {imagePreview ? (
           <div className="relative">
             <img 
@@ -55,7 +55,7 @@ const ProductImageUpload = ({
               type="button"
               size="sm"
               variant="destructive"
-              className="absolute top-2 right-2"
+              className="absolute top-2 right-2 bg-red-600 hover:bg-red-700"
               onClick={clearImageSelection}
             >
               <X className="h-4 w-4" />
@@ -67,10 +67,10 @@ const ProductImageUpload = ({
             onClick={() => fileInputRef.current?.click()}
           >
             <Image className="h-10 w-10 text-gray-400 mb-2" />
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               Clique para fazer upload de uma imagem
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               PNG, JPG ou WEBP até 5MB
             </p>
           </div>

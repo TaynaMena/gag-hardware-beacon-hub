@@ -7,8 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/components/ui/use-toast';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import { 
   Form, 
@@ -101,7 +100,7 @@ const CollaboratorForm = () => {
           throw new Error('Já existe um colaborador com esta matrícula.');
         }
         
-        // Create new collaborator - Ensure we pass all required fields
+        // Create new collaborator
         const { error } = await supabase
           .from('collaborators')
           .insert({
@@ -122,16 +121,21 @@ const CollaboratorForm = () => {
         queryClient.invalidateQueries({ queryKey: ['collaborator', id] });
       }
       
-      toast.success(
-        result === 'created'
-          ? 'Colaborador cadastrado com sucesso!'
-          : 'Colaborador atualizado com sucesso!'
-      );
+      toast({
+        title: result === 'created' ? 'Colaborador cadastrado' : 'Colaborador atualizado',
+        description: result === 'created' 
+          ? 'Colaborador cadastrado com sucesso!' 
+          : 'Colaborador atualizado com sucesso!',
+      });
       
       navigate('/admin/colaboradores');
     },
     onError: (error: Error) => {
-      toast.error(`Erro: ${error.message}`);
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -147,10 +151,11 @@ const CollaboratorForm = () => {
             variant="outline" 
             size="sm" 
             onClick={() => navigate('/admin/colaboradores')}
+            className="bg-gray-800 text-white border-gray-700 hover:bg-gray-700"
           >
             <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
           </Button>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             {isEditing ? 'Editar Colaborador' : 'Cadastrar Colaborador'}
           </h1>
         </div>
@@ -160,7 +165,7 @@ const CollaboratorForm = () => {
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
           </div>
         ) : (
-          <div className="bg-white p-6 rounded-md shadow-sm border">
+          <div className="bg-gray-800 p-6 rounded-md shadow-sm border border-gray-700">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -169,11 +174,15 @@ const CollaboratorForm = () => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nome completo*</FormLabel>
+                        <FormLabel className="text-gray-200">Nome completo*</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nome do colaborador" {...field} />
+                          <Input 
+                            placeholder="Nome do colaborador" 
+                            {...field} 
+                            className="bg-gray-900 border-gray-700 text-white"
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
@@ -183,11 +192,15 @@ const CollaboratorForm = () => {
                     name="matricula"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Matrícula*</FormLabel>
+                        <FormLabel className="text-gray-200">Matrícula*</FormLabel>
                         <FormControl>
-                          <Input placeholder="Matrícula do colaborador" {...field} />
+                          <Input 
+                            placeholder="Matrícula do colaborador" 
+                            {...field} 
+                            className="bg-gray-900 border-gray-700 text-white"
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
@@ -197,11 +210,16 @@ const CollaboratorForm = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email*</FormLabel>
+                        <FormLabel className="text-gray-200">Email*</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="email@exemplo.com" {...field} />
+                          <Input 
+                            type="email" 
+                            placeholder="email@exemplo.com" 
+                            {...field} 
+                            className="bg-gray-900 border-gray-700 text-white"
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
@@ -211,11 +229,15 @@ const CollaboratorForm = () => {
                     name="sector"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Setor</FormLabel>
+                        <FormLabel className="text-gray-200">Setor</FormLabel>
                         <FormControl>
-                          <Input placeholder="Setor do colaborador" {...field} />
+                          <Input 
+                            placeholder="Setor do colaborador" 
+                            {...field} 
+                            className="bg-gray-900 border-gray-700 text-white"
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
@@ -225,11 +247,15 @@ const CollaboratorForm = () => {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Telefone</FormLabel>
+                        <FormLabel className="text-gray-200">Telefone</FormLabel>
                         <FormControl>
-                          <Input placeholder="(00) 00000-0000" {...field} />
+                          <Input 
+                            placeholder="(00) 00000-0000" 
+                            {...field} 
+                            className="bg-gray-900 border-gray-700 text-white" 
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
@@ -239,6 +265,7 @@ const CollaboratorForm = () => {
                   <Button 
                     type="submit" 
                     disabled={form.formState.isSubmitting || mutation.isPending}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {(form.formState.isSubmitting || mutation.isPending) ? (
                       <>

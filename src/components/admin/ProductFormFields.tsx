@@ -24,11 +24,15 @@ const ProductFormFields: React.FC = () => {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nome do Produto</FormLabel>
+            <FormLabel className="text-gray-200">Nome do Produto</FormLabel>
             <FormControl>
-              <Input placeholder="Digite o nome do produto" {...field} />
+              <Input 
+                placeholder="Digite o nome do produto" 
+                {...field} 
+                className="bg-gray-900 border-gray-700 text-white"
+              />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-red-400" />
           </FormItem>
         )}
       />
@@ -38,19 +42,19 @@ const ProductFormFields: React.FC = () => {
         name="category_id"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Categoria</FormLabel>
+            <FormLabel className="text-gray-200">Categoria</FormLabel>
             <FormControl>
               {loadingCategories ? (
-                <Skeleton className="h-10" />
+                <Skeleton className="h-10 bg-gray-700" />
               ) : (
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-900 border-gray-700 text-white">
                     {categories?.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
@@ -60,7 +64,7 @@ const ProductFormFields: React.FC = () => {
                 </Select>
               )}
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-red-400" />
           </FormItem>
         )}
       />
@@ -70,7 +74,7 @@ const ProductFormFields: React.FC = () => {
         name="price"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Preço (R$)</FormLabel>
+            <FormLabel className="text-gray-200">Preço (R$)</FormLabel>
             <FormControl>
               <Input
                 type="number"
@@ -78,9 +82,10 @@ const ProductFormFields: React.FC = () => {
                 min="0"
                 placeholder="0.00"
                 {...field}
+                className="bg-gray-900 border-gray-700 text-white"
               />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-red-400" />
           </FormItem>
         )}
       />
@@ -90,16 +95,17 @@ const ProductFormFields: React.FC = () => {
         name="stock"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Estoque</FormLabel>
+            <FormLabel className="text-gray-200">Estoque</FormLabel>
             <FormControl>
               <Input
                 type="number"
                 min="0"
                 placeholder="0"
                 {...field}
+                className="bg-gray-900 border-gray-700 text-white"
               />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-red-400" />
           </FormItem>
         )}
       />
@@ -109,16 +115,16 @@ const ProductFormFields: React.FC = () => {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Descrição</FormLabel>
+            <FormLabel className="text-gray-200">Descrição</FormLabel>
             <FormControl>
               <Textarea
                 placeholder="Descreva o produto"
-                className="resize-none"
+                className="resize-none bg-gray-900 border-gray-700 text-white"
                 {...field}
                 value={field.value || ''}
               />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-red-400" />
           </FormItem>
         )}
       />
