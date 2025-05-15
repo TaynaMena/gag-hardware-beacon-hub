@@ -80,18 +80,28 @@ const UserAuth: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-md mx-auto py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Acesso do Cliente</CardTitle>
-            <CardDescription>
+        <Card className="border border-gag-cyan/30 bg-black/40 backdrop-blur-md text-gag-white">
+          <CardHeader className="border-b border-gag-cyan/20">
+            <CardTitle className="text-gag-cyan">Acesso do Cliente</CardTitle>
+            <CardDescription className="text-gray-300">
               Entre ou crie uma conta para continuar com sua compra
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Cadastro</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-black/60 border border-gag-cyan/20">
+                <TabsTrigger 
+                  value="login"
+                  className="data-[state=active]:bg-gag-blue data-[state=active]:text-white"
+                >
+                  Login
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="register"
+                  className="data-[state=active]:bg-gag-blue data-[state=active]:text-white"
+                >
+                  Cadastro
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="login" className="mt-4">
@@ -102,11 +112,15 @@ const UserAuth: React.FC = () => {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel className="text-gag-white">Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="seu.email@exemplo.com" {...field} />
+                            <Input 
+                              placeholder="seu.email@exemplo.com" 
+                              className="bg-black/40 border-gag-cyan/30 text-gag-white placeholder:text-gray-500"
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-400" />
                         </FormItem>
                       )}
                     />
@@ -115,15 +129,20 @@ const UserAuth: React.FC = () => {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Senha</FormLabel>
+                          <FormLabel className="text-gag-white">Senha</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Sua senha" {...field} />
+                            <Input 
+                              type="password" 
+                              placeholder="Sua senha" 
+                              className="bg-black/40 border-gag-cyan/30 text-gag-white placeholder:text-gray-500"
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-400" />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button type="submit" className="w-full bg-gag-blue hover:bg-gag-blue-dark" disabled={isLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -207,8 +226,8 @@ const UserAuth: React.FC = () => {
               </TabsContent>
             </Tabs>
           </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-gray-500">
+          <CardFooter className="flex justify-center border-t border-gag-cyan/20">
+            <p className="text-sm text-gray-400">
               Seus dados serão usados apenas para finalização de pedidos e acompanhamento de histórico
             </p>
           </CardFooter>

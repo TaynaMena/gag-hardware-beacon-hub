@@ -93,14 +93,14 @@ const CollaboratorLogin: React.FC = () => {
     <Layout>
       <div className="max-w-md mx-auto py-8">
         {isFirstTimeLogin ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Primeiro acesso</CardTitle>
-              <CardDescription>
+          <Card className="border border-gag-cyan/30 bg-black/40 backdrop-blur-md text-gag-white">
+            <CardHeader className="border-b border-gag-cyan/20">
+              <CardTitle className="text-gag-cyan">Primeiro acesso</CardTitle>
+              <CardDescription className="text-gray-300">
                 Olá {tempCollaborator?.name}, bem-vindo(a) à GAG Hardware! Por favor, crie uma senha para continuar.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <Form {...firstLoginForm}>
                 <form onSubmit={firstLoginForm.handleSubmit(onFirstLoginSubmit)} className="space-y-4">
                   <FormField
@@ -108,11 +108,16 @@ const CollaboratorLogin: React.FC = () => {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nova senha</FormLabel>
+                        <FormLabel className="text-gag-white">Nova senha</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Mínimo 6 caracteres" {...field} />
+                          <Input 
+                            type="password" 
+                            placeholder="Mínimo 6 caracteres" 
+                            className="bg-black/40 border-gag-cyan/30 text-gag-white placeholder:text-gray-500" 
+                            {...field} 
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
@@ -121,15 +126,20 @@ const CollaboratorLogin: React.FC = () => {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirme a senha</FormLabel>
+                        <FormLabel className="text-gag-white">Confirme a senha</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Confirme sua senha" {...field} />
+                          <Input 
+                            type="password" 
+                            placeholder="Confirme sua senha" 
+                            className="bg-black/40 border-gag-cyan/30 text-gag-white placeholder:text-gray-500" 
+                            {...field} 
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full bg-gag-blue hover:bg-gag-blue-dark" disabled={isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -144,14 +154,14 @@ const CollaboratorLogin: React.FC = () => {
             </CardContent>
           </Card>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Login do Colaborador</CardTitle>
-              <CardDescription>
+          <Card className="border border-gag-cyan/30 bg-black/40 backdrop-blur-md text-gag-white">
+            <CardHeader className="border-b border-gag-cyan/20">
+              <CardTitle className="text-gag-cyan">Login do Colaborador</CardTitle>
+              <CardDescription className="text-gray-300">
                 Entre com sua matrícula e senha para acessar
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                   <FormField
@@ -159,11 +169,15 @@ const CollaboratorLogin: React.FC = () => {
                     name="matricula"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Matrícula</FormLabel>
+                        <FormLabel className="text-gag-white">Matrícula</FormLabel>
                         <FormControl>
-                          <Input placeholder="Digite sua matrícula" {...field} />
+                          <Input 
+                            placeholder="Digite sua matrícula" 
+                            className="bg-black/40 border-gag-cyan/30 text-gag-white placeholder:text-gray-500" 
+                            {...field}
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
@@ -172,15 +186,20 @@ const CollaboratorLogin: React.FC = () => {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Senha</FormLabel>
+                        <FormLabel className="text-gag-white">Senha</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Digite sua senha" {...field} />
+                          <Input 
+                            type="password" 
+                            placeholder="Digite sua senha" 
+                            className="bg-black/40 border-gag-cyan/30 text-gag-white placeholder:text-gray-500" 
+                            {...field} 
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full bg-gag-blue hover:bg-gag-blue-dark" disabled={isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -193,8 +212,8 @@ const CollaboratorLogin: React.FC = () => {
                 </form>
               </Form>
             </CardContent>
-            <CardFooter className="flex justify-center">
-              <p className="text-sm text-gray-500">
+            <CardFooter className="flex justify-center border-t border-gag-cyan/20">
+              <p className="text-sm text-gray-400">
                 Acesse com a matrícula fornecida pelo seu administrador
               </p>
             </CardFooter>

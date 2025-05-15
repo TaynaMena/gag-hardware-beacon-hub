@@ -46,8 +46,8 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md shadow-lg">
+    <div className="flex items-center justify-center min-h-screen bg-gag-dark">
+      <Card className="w-full max-w-md shadow-lg border border-gag-cyan/30 bg-black/40 backdrop-blur-sm">
         <CardHeader className="space-y-2">
           <div className="flex justify-center mb-6">
             <img 
@@ -56,22 +56,22 @@ const AdminLogin = () => {
               className="h-16" 
             />
           </div>
-          <CardTitle className="text-2xl text-center font-bold">Acesso de Vendedor</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl text-center font-bold text-gag-cyan">Acesso de Vendedor</CardTitle>
+          <CardDescription className="text-center text-gray-300">
             Faça login para acessar o painel administrativo
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-50 p-3 rounded-md flex items-start gap-2 text-red-700 text-sm">
+              <div className="bg-red-900/30 p-3 rounded-md flex items-start gap-2 text-red-300 text-sm border border-red-800/50">
                 <AlertCircle className="h-5 w-5 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-gag-white">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -79,11 +79,12 @@ const AdminLogin = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="gag-input"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password" className="text-gag-white">Senha</Label>
               <Input
                 id="password"
                 type="password"
@@ -91,12 +92,13 @@ const AdminLogin = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="gag-input"
               />
             </div>
             
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-gag-blue hover:bg-gag-blue-dark" 
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -110,7 +112,7 @@ const AdminLogin = () => {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center text-sm text-gray-500">
+        <CardFooter className="flex justify-center text-sm text-gray-400">
           Acesso restrito a vendedores autorizados
         </CardFooter>
       </Card>
