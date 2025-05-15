@@ -5,6 +5,7 @@ export interface Product {
   id: string;
   name: string;
   category: ProductCategory;
+  category_id?: string;
   description: string;
   stock: number;
   price: number;
@@ -16,6 +17,7 @@ export interface Product {
 export interface NewProduct {
   name: string;
   category: ProductCategory;
+  category_id: string;
   description: string;
   stock: number;
   price: number;

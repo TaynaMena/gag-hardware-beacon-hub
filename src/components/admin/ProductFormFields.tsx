@@ -1,37 +1,32 @@
 
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ProductFormData } from '@/schemas/productFormSchema';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getAllCategories } from '@/services/categoryService';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useFormContext } from 'react-hook-form';
 
-const ProductFormFields = () => {
-  const { control } = useFormContext<ProductFormData>();
+const ProductFormFields: React.FC = () => {
+  const form = useFormContext();
+
+  const { data: categories, isLoading: loadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getAllCategories,
+  });
 
   return (
     <>
       <FormField
-        control={control}
+        control={form.control}
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nome do Produto*</FormLabel>
+            <FormLabel>Nome do Produto</FormLabel>
             <FormControl>
-              <Input placeholder="Nome do produto" {...field} />
+              <Input placeholder="Digite o nome do produto" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -39,76 +34,78 @@ const ProductFormFields = () => {
       />
 
       <FormField
-        control={control}
-        name="category"
+        control={form.control}
+        name="category_id"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Categoria*</FormLabel>
-            <Select
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-              value={field.value}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma categoria" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="Monitores">Monitores</SelectItem>
-                <SelectItem value="Periféricos">Periféricos</SelectItem>
-                <SelectItem value="Componentes">Componentes</SelectItem>
-              </SelectContent>
-            </Select>
+            <FormLabel>Categoria</FormLabel>
+            <FormControl>
+              {loadingCategories ? (
+                <Skeleton className="h-10" />
+              ) : (
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories?.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
 
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name="price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Preço (R$)*</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="stock"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Estoque*</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="0"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      <FormField
+        control={form.control}
+        name="price"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Preço (R$)</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       <FormField
-        control={control}
+        control={form.control}
+        name="stock"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Estoque</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                min="0"
+                placeholder="0"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="description"
         render={({ field }) => (
           <FormItem>
@@ -116,8 +113,9 @@ const ProductFormFields = () => {
             <FormControl>
               <Textarea
                 placeholder="Descreva o produto"
-                className="resize-none min-h-[100px]"
+                className="resize-none"
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />

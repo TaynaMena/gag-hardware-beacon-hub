@@ -5,25 +5,25 @@ import { Product, ProductCategory, NewProduct, ProductUpdate } from "@/types/Pro
 export const getAllProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from("products")
-    .select("*");
+    .select("*, categories:category_id(name, slug)")
+    .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Error fetching products:", error);
     throw new Error(error.message);
   }
 
-  // Ensure we cast the data properly to match our Product type
   return (data as unknown) as Product[];
 };
 
-export const getProductsByCategory = async (category: ProductCategory): Promise<Product[]> => {
+export const getProductsByCategory = async (categoryId: string): Promise<Product[]> => {
   const { data, error } = await supabase
     .from("products")
-    .select("*")
-    .eq("category", category);
+    .select("*, categories:category_id(name, slug)")
+    .eq("category_id", categoryId);
 
   if (error) {
-    console.error(`Error fetching products in category ${category}:`, error);
+    console.error(`Error fetching products in category ${categoryId}:`, error);
     throw new Error(error.message);
   }
 
@@ -33,7 +33,7 @@ export const getProductsByCategory = async (category: ProductCategory): Promise<
 export const getProductById = async (id: string): Promise<Product> => {
   const { data, error } = await supabase
     .from("products")
-    .select("*")
+    .select("*, categories:category_id(name, slug)")
     .eq("id", id)
     .single();
 
@@ -60,7 +60,6 @@ export const createProduct = async (product: NewProduct): Promise<Product> => {
   return (data as unknown) as Product;
 };
 
-// Esta função usa o tipo ProductUpdate que é um Partial<NewProduct>
 export const updateProduct = async (id: string, updates: ProductUpdate): Promise<Product> => {
   const { data, error } = await supabase
     .from("products")
@@ -87,4 +86,28 @@ export const deleteProduct = async (id: string): Promise<void> => {
     console.error(`Error deleting product with ID ${id}:`, error);
     throw new Error(error.message);
   }
+};
+
+export const importProductsFromJSON = async (products: Omit<NewProduct, 'image_url'>[]): Promise<{success: number, errors: {index: number, error: string}[]}> => {
+  const results = {
+    success: 0,
+    errors: [] as {index: number, error: string}[]
+  };
+
+  for (let i = 0; i < products.length; i++) {
+    try {
+      await createProduct({
+        ...products[i],
+        image_url: undefined
+      });
+      results.success++;
+    } catch (error) {
+      results.errors.push({
+        index: i,
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  }
+
+  return results;
 };

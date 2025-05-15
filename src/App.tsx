@@ -14,6 +14,8 @@ import UserAuth from "./pages/UserAuth";
 import AdminProducts from "./pages/AdminProducts";
 import AdminLogin from "./pages/AdminLogin";
 import AdminCollaborators from "./pages/AdminCollaborators";
+import AdminCategories from "./pages/AdminCategories";
+import AdminImportProducts from "./pages/AdminImportProducts";
 import CollaboratorForm from "./pages/CollaboratorForm";
 import ProductForm from "./pages/ProductForm";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -49,6 +51,16 @@ const App = () => (
                   <Route path="/admin-produtos" element={
                     <ProtectedRoute>
                       <AdminProducts />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/categorias" element={
+                    <ProtectedRoute>
+                      <AdminCategories />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/importar-produtos" element={
+                    <ProtectedRoute>
+                      <AdminImportProducts />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/colaboradores" element={
