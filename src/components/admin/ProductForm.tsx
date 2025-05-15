@@ -21,7 +21,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const formData = new FormData(e.currentTarget);
     const values: ProductFormValues = {
       name: formData.get('name') as string,
-      category: formData.get('category') as any,
+      category_id: formData.get('category_id') as string,
       description: formData.get('description') as string,
       price: Number(formData.get('price')),
       stock: Number(formData.get('stock')),
@@ -46,14 +46,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
             />
           </div>
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+            <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
             <select
-              id="category"
-              name="category"
+              id="category_id"
+              name="category_id"
               required
-              defaultValue={defaultValues?.category}
+              defaultValue={defaultValues?.category_id}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
             >
+              <option value="">Selecione uma categoria</option>
               <option value="Monitores">Monitores</option>
               <option value="Periféricos">Periféricos</option>
               <option value="Hardware">Hardware</option>

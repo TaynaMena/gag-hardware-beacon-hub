@@ -14,7 +14,6 @@ import { useProductsUpload } from '@/hooks/useProductsUpload';
 import { productSchema, ProductFormData } from '@/schemas/productFormSchema';
 import ProductFormFields from '@/components/admin/ProductFormFields';
 import ProductImageUpload from '@/components/admin/ProductImageUpload';
-import { ProductCategory } from '@/types/Product';
 
 const ProductForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +30,7 @@ const ProductForm = () => {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
-      category: 'Componentes' as ProductCategory,
+      category_id: '',
       description: '',
       price: 0,
       stock: 0,
@@ -55,7 +54,7 @@ const ProductForm = () => {
       // Pre-fill form with existing data
       form.reset({
         name: data.name,
-        category: data.category as ProductCategory,
+        category_id: data.category_id,
         description: data.description || '',
         price: data.price,
         stock: data.stock,
@@ -91,7 +90,7 @@ const ProductForm = () => {
       // Ensure we have all required fields for the product
       const productData = {
         name: values.name,
-        category: values.category,
+        category_id: values.category_id,
         description: values.description || '',
         price: values.price,
         stock: values.stock,
