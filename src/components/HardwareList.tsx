@@ -5,6 +5,7 @@ import HardwareCard from './HardwareCard';
 import SearchFilter from './SearchFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Filter, Star, ArrowUp, ArrowDown } from 'lucide-react';
 
 const HardwareList: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -77,41 +78,60 @@ const HardwareList: React.FC = () => {
       />
       
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <h2 className="text-2xl font-bold mb-2 sm:mb-0">Hardware Components</h2>
-        <div className="flex items-center">
-          <span className="text-sm text-gray-600 mr-2">Sort by:</span>
+        <p className="text-gray-300 mb-2 sm:mb-0">
+          Mostrando {sortedItems.length} de {hardwareData.length} produtos
+        </p>
+        <div className="flex items-center bg-black/40 rounded-md border border-gag-cyan/30 p-2">
+          <Filter className="h-4 w-4 text-gag-cyan mr-2" />
+          <span className="text-sm text-gray-300 mr-2">Ordenar por:</span>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
+            <SelectTrigger className="border-none bg-transparent text-gag-white w-[140px] focus:ring-0">
+              <SelectValue placeholder="Ordenar por" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-              <SelectItem value="price-asc">Price (Low to High)</SelectItem>
-              <SelectItem value="price-desc">Price (High to Low)</SelectItem>
-              <SelectItem value="rating-desc">Highest Rated</SelectItem>
+            <SelectContent className="bg-gag-dark border border-gag-cyan/30">
+              <SelectItem value="name-asc" className="text-gag-white focus:bg-gag-cyan/20 focus:text-gag-white">
+                <div className="flex items-center">
+                  Nome (A-Z) <ArrowDown className="ml-2 h-3 w-3" />
+                </div>
+              </SelectItem>
+              <SelectItem value="name-desc" className="text-gag-white focus:bg-gag-cyan/20 focus:text-gag-white">
+                <div className="flex items-center">
+                  Nome (Z-A) <ArrowUp className="ml-2 h-3 w-3" />
+                </div>
+              </SelectItem>
+              <SelectItem value="price-asc" className="text-gag-white focus:bg-gag-cyan/20 focus:text-gag-white">
+                <div className="flex items-center">
+                  Preço (menor) <ArrowDown className="ml-2 h-3 w-3" />
+                </div>
+              </SelectItem>
+              <SelectItem value="price-desc" className="text-gag-white focus:bg-gag-cyan/20 focus:text-gag-white">
+                <div className="flex items-center">
+                  Preço (maior) <ArrowUp className="ml-2 h-3 w-3" />
+                </div>
+              </SelectItem>
+              <SelectItem value="rating-desc" className="text-gag-white focus:bg-gag-cyan/20 focus:text-gag-white">
+                <div className="flex items-center">
+                  Avaliação <Star className="ml-2 h-3 w-3 fill-yellow-400" />
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       
       {sortedItems.length === 0 ? (
-        <Alert>
+        <Alert className="bg-black/40 border border-gag-cyan/30 text-gag-white">
           <AlertDescription>
-            No hardware components match your search criteria. Try adjusting your filters.
+            Nenhum produto corresponde aos critérios de busca. Tente ajustar seus filtros.
           </AlertDescription>
         </Alert>
       ) : (
-        <div className="hardware-grid">
+        <div className="product-grid">
           {sortedItems.map((item: HardwareItem) => (
             <HardwareCard key={item.id} item={item} />
           ))}
         </div>
       )}
-      
-      <div className="mt-6 text-center text-sm text-gray-500">
-        Showing {sortedItems.length} of {hardwareData.length} items
-      </div>
     </div>
   );
 };

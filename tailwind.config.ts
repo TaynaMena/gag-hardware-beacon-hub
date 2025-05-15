@@ -65,18 +65,13 @@ export default {
 				},
 				// GAG brand colors
 				gag: {
-					purple: '#9b87f5',  // Primary Purple
-					'purple-dark': '#7E69AB',  // Secondary Purple
-					'purple-darker': '#6E59A5',  // Tertiary Purple
-					'purple-light': '#D6BCFA',  // Light Purple
-					gray: '#8E9196',  // Neutral Gray
-					dark: '#1A1F2C',   // Dark Purple
-					'blue-dark': '#01036d',  // Dark Blue (from image)
-					blue: '#0000ff',  // Brand Blue (from image)
-					green: '#4CAF50',  // Adding a green color for inStock badges
-					cyan: '#00B8D9',  // Adding cyan color
+					blue: '#0000ff',       // Azul
+					'blue-dark': '#00006c', // Azul escuro
+					cyan: '#15f1ff',       // Ciano
+					lime: '#48ff17',       // Verde limão
+					dark: '#1b1b1b',       // Preto
+					white: '#ffffff',      // Branco
 				},
-				'navy-dark': '#01036d',  // Dark Blue (from image)
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -113,7 +108,11 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.5s ease-out'
-			}
+			},
+			fontFamily: {
+				sans: ['Inter', 'system-ui', 'sans-serif'],
+				poppins: ['Poppins', 'sans-serif'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
