@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Product } from '@/types/Product';
 import { ProductFormValues } from '@/schemas/productFormSchema';
 import ProductsTable from './ProductsTable';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 interface ProductListProps {
   products: Product[];
@@ -43,6 +45,11 @@ const ProductList = ({
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Lista de Produtos</h2>
+        
+        <Button className="flex items-center gap-2" onClick={() => setIsAddModalOpen(true)}>
+          <Plus size={16} />
+          <span>Adicionar Produto</span>
+        </Button>
         
         {/* Add Product Modal */}
         <AddProductModal
