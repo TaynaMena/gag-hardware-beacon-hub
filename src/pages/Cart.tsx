@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -6,9 +5,11 @@ import CartItem from '@/components/cart/CartItem';
 import CartSummary from '@/components/cart/CartSummary';
 import CartEmpty from '@/components/cart/CartEmpty';
 import { useCart } from '@/contexts/CartContext';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 
 const Cart = () => {
   const { items, removeItem, updateItemQuantity, clearCart, getTotalPrice } = useCart();
+  const { isAuthenticated } = useUserAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
 
@@ -17,8 +18,13 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    // Redirect to the collaborator checkout
-    navigate('/colaborador/checkout');
+    // If user is authenticated, redirect to checkout
+    // Otherwise, redirect to login page with redirect back to checkout
+    if (isAuthenticated) {
+      navigate('/checkout');
+    } else {
+      navigate('/auth?redirectTo=/checkout');
+    }
   };
 
   if (items.length === 0) {
