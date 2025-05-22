@@ -1,302 +1,223 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import { Button } from '@/components/ui/button';
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu';
-import { navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, X, ShoppingCart, User, Users, Search } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
 import { useUserAuth } from '@/contexts/UserAuthContext';
-import { useSellerAuth } from '@/contexts/SellerAuthContext';
 import { useCollaboratorAuth } from '@/contexts/CollaboratorAuthContext';
+import { 
+  Home, 
+  ShoppingBag, 
+  ShoppingCart, 
+  User, 
+  LogIn, 
+  Menu, 
+  X, 
+  Package,
+  Tag
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useMobile } from '@/hooks/use-mobile';
 
-const Header: React.FC = () => {
-  const { items } = useCart();
+const Header = () => {
   const location = useLocation();
-  const isMobile = useIsMobile();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  const { user, isAuthenticated: isUserAuthenticated } = useUserAuth();
-  const { seller, isAuthenticated: isSellerAuthenticated } = useSellerAuth();
+  const { cartItems, getTotalItems } = useCart();
+  const { user, isAuthenticated, logout } = useUserAuth();
   const { collaborator, isAuthenticated: isCollaboratorAuthenticated } = useCollaboratorAuth();
-  
-  const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
+  const isMobile = useMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  const totalItems = getTotalItems();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const navItems = [
+    { path: '/', label: 'Início', icon: <Home size={18} /> },
+    { path: '/vitrine', label: 'Produtos', icon: <Package size={18} /> },
+    { path: '/ofertas', label: 'Ofertas', icon: <Tag size={18} /> },
+    { path: '/produtos', label: 'Catálogo', icon: <ShoppingBag size={18} /> },
+  ];
+
+  const handleMenuToggle = () => setIsMenuOpen(!isMenuOpen);
+
+  const accountMenuItems = isAuthenticated || isCollaboratorAuthenticated
+    ? [
+        { label: isAuthenticated ? user?.name : collaborator?.name, icon: <User size={18} /> },
+        { label: 'Sair', onClick: logout, icon: <LogIn size={18} className="transform rotate-180" /> }
+      ]
+    : [
+        { path: '/auth', label: 'Entrar', icon: <LogIn size={18} /> }
+      ];
 
   return (
-    <header className="bg-black/80 backdrop-blur-md border-b border-gag-cyan/20 shadow-md sticky top-0 z-50 animate-fade-in">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center">
-              <img 
-                src="/lovable-uploads/eb34af22-c138-4004-a47b-ecfe0724a94c.png" 
-                alt="GAG Hardware" 
-                className="h-10 w-auto"
-              />
-            </Link>
-          </div>
+    <header 
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        scrolled ? 'bg-black/80 backdrop-blur-md shadow-lg shadow-black/30' : 'bg-black/50 backdrop-blur-sm'
+      }`}
+    >
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="flex items-center">
+          <img 
+            src="/lovable-uploads/eb34af22-c138-4004-a47b-ecfe0724a94c.png" 
+            alt="GAG Hardware" 
+            className="h-8" 
+          />
+        </Link>
 
-          {/* Search - Desktop */}
+        {/* Desktop Navigation */}
+        {!isMobile && (
+          <nav className="flex items-center space-x-1">
+            {navItems.map((item) => (
+              <Link key={item.path} to={item.path}>
+                <Button
+                  variant="ghost"
+                  className={`flex items-center px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive(item.path)
+                      ? 'text-gag-cyan bg-gag-dark/50' 
+                      : 'text-gray-300 hover:text-gag-white hover:bg-gag-dark/30'
+                  }`}
+                >
+                  <span className="mr-2">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Button>
+              </Link>
+            ))}
+          </nav>
+        )}
+
+        {/* User Section */}
+        <div className="flex items-center space-x-2">
           {!isMobile && (
-            <div className="relative mx-4 flex-grow max-w-md">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Pesquisar produtos..."
-                  className="w-full bg-black/40 border border-gag-cyan/30 rounded-lg px-4 py-2 text-gag-white placeholder:text-gray-400 focus:outline-none focus:border-gag-cyan pr-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Search className="h-5 w-5 text-gag-cyan" />
+            <>
+              {/* Account */}
+              <div className="relative group">
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-gag-white"
+                >
+                  <User size={18} className="mr-1" />
+                  <span className="max-w-[100px] truncate">
+                    {isAuthenticated 
+                      ? (user?.name || 'Usuário') 
+                      : isCollaboratorAuthenticated 
+                        ? (collaborator?.name || 'Colaborador')
+                        : 'Minha Conta'}
+                  </span>
+                </Button>
+                <div className="absolute right-0 mt-1 w-48 origin-top-right bg-black/90 backdrop-blur-md border border-gag-cyan/30 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="py-1">
+                    {accountMenuItems.map((item, index) => (
+                      item.path ? (
+                        <Link 
+                          key={index} 
+                          to={item.path}
+                          className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gag-blue/20 hover:text-gag-white"
+                        >
+                          <span className="mr-2">{item.icon}</span>
+                          <span>{item.label}</span>
+                        </Link>
+                      ) : (
+                        <button 
+                          key={index}
+                          onClick={item.onClick}
+                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gag-blue/20 hover:text-gag-white"
+                        >
+                          <span className="mr-2">{item.icon}</span>
+                          <span>{item.label}</span>
+                        </button>
+                      )
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
-
+          
+          {/* Cart */}
+          <Link to="/carrinho">
+            <Button variant="ghost" className="relative px-3 text-gray-300 hover:text-gag-white">
+              <ShoppingCart size={20} />
+              {totalItems > 0 && (
+                <Badge className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-gag-cyan text-gag-dark text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
+                  {totalItems}
+                </Badge>
+              )}
+            </Button>
+          </Link>
+          
           {/* Mobile Menu Button */}
           {isMobile && (
-            <button
-              className="text-gag-white p-2"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
+            <Button variant="ghost" onClick={handleMenuToggle} className="text-gray-300">
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            </Button>
           )}
-
-          {/* Navigation - Desktop */}
-          {!isMobile && (
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <Link to="/">
-                    <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${location.pathname === '/' ? 'bg-gag-blue text-gag-white' : 'bg-transparent text-gag-white hover:bg-gag-cyan/10'}`}>
-                      Início
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/produtos">
-                    <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${location.pathname === '/produtos' ? 'bg-gag-blue text-gag-white' : 'bg-transparent text-gag-white hover:bg-gag-cyan/10'}`}>
-                      Produtos
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/ofertas">
-                    <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${location.pathname === '/ofertas' ? 'bg-gag-blue text-gag-white' : 'bg-transparent text-gag-white hover:bg-gag-cyan/10'}`}>
-                      Ofertas
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                {isCollaboratorAuthenticated && (
-                  <NavigationMenuItem>
-                    <Link to="/colaborador">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${location.pathname.includes('/colaborador') && !location.pathname.includes('/login') ? 'bg-gag-blue text-gag-white' : 'bg-transparent text-gag-white hover:bg-gag-cyan/10'}`}>
-                        Painel do Colaborador
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                )}
-                {isSellerAuthenticated && (
-                  <NavigationMenuItem>
-                    <Link to="/admin-produtos">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${location.pathname.includes('admin-') ? 'bg-gag-blue text-gag-white' : 'bg-transparent text-gag-white hover:bg-gag-cyan/10'}`}>
-                        Painel Administrativo
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                )}
-              </NavigationMenuList>
-            </NavigationMenu>
-          )}
-
-          {/* Cart and Account Buttons */}
-          <div className="flex items-center space-x-3">
-            {/* Login/User Button */}
-            {isUserAuthenticated ? (
-              <Link to="/perfil">
-                <Button variant="outline" className="bg-transparent border-gag-cyan/40 text-gag-white hover:bg-gag-cyan/10 hover:border-gag-cyan">
-                  <User className="h-5 w-5" />
-                  {!isMobile && <span className="ml-2 truncate max-w-[100px]">{user?.name || user?.email?.split('@')[0]}</span>}
-                </Button>
-              </Link>
-            ) : isCollaboratorAuthenticated ? (
-              <Link to="/colaborador">
-                <Button variant="outline" className="bg-transparent border-gag-lime/40 text-gag-lime hover:bg-gag-lime/10 hover:border-gag-lime">
-                  <Users className="h-5 w-5" />
-                  {!isMobile && <span className="ml-2 truncate max-w-[100px]">{collaborator?.name}</span>}
-                </Button>
-              </Link>
-            ) : isSellerAuthenticated ? (
-              <Link to="/admin-produtos">
-                <Button variant="outline" className="bg-transparent border-gag-cyan/40 text-gag-cyan hover:bg-gag-cyan/10 hover:border-gag-cyan">
-                  <Users className="h-5 w-5" />
-                  {!isMobile && <span className="ml-2 truncate max-w-[100px]">{seller?.name}</span>}
-                </Button>
-              </Link>
-            ) : (
-              <div className="flex space-x-2">
-                <Link to="/auth">
-                  <Button variant="outline" className="bg-transparent border-gag-cyan/40 text-gag-white hover:bg-gag-cyan/10 hover:border-gag-cyan">
-                    <User className="h-5 w-5" />
-                    {!isMobile && <span className="ml-2">Entrar</span>}
-                  </Button>
-                </Link>
-                
-                <Link to="/colaborador/login">
-                  <Button variant="outline" className="bg-transparent border-gag-lime/40 text-gag-lime hover:bg-gag-lime/10 hover:border-gag-lime">
-                    <Users className="h-5 w-5" />
-                    {!isMobile && <span className="ml-2">Colaborador</span>}
-                  </Button>
-                </Link>
-                
-                <Link to="/admin/login">
-                  <Button variant="outline" className="bg-transparent border-gag-cyan/40 text-gag-cyan hover:bg-gag-cyan/10 hover:border-gag-cyan">
-                    <Users className="h-5 w-5" />
-                    {!isMobile && <span className="ml-2">Admin</span>}
-                  </Button>
-                </Link>
-              </div>
-            )}
-            
-            <Link to="/carrinho">
-              <Button variant="default" className="bg-gag-blue hover:bg-gag-blue-dark relative">
-                <ShoppingCart className="h-5 w-5" />
-                {!isMobile && <span className="ml-2">Carrinho</span>}
-                {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gag-lime text-gag-dark text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                    {totalItems}
-                  </span>
-                )}
-              </Button>
-            </Link>
-          </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMobile && isMenuOpen && (
-        <div className="px-4 pb-4 bg-black/90 border-t border-gag-cyan/10 animate-fade-in">
-          {/* Mobile Search */}
-          <div className="py-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Pesquisar produtos..."
-                className="w-full bg-black/40 border border-gag-cyan/30 rounded-lg px-4 py-2 text-gag-white placeholder:text-gray-400 focus:outline-none focus:border-gag-cyan pr-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <Search className="h-5 w-5 text-gag-cyan" />
-              </div>
-            </div>
-          </div>
-          
-          {/* Mobile Nav Links */}
-          <nav className="flex flex-col space-y-2">
-            <Link
-              to="/"
-              className={`text-gag-white py-2 px-3 rounded ${location.pathname === '/' ? 'bg-gag-blue' : 'hover:bg-gag-cyan/10'}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Início
-            </Link>
-            <Link
-              to="/produtos"
-              className={`text-gag-white py-2 px-3 rounded ${location.pathname === '/produtos' ? 'bg-gag-blue' : 'hover:bg-gag-cyan/10'}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Produtos
-            </Link>
-            <Link
-              to="/ofertas"
-              className={`text-gag-white py-2 px-3 rounded ${location.pathname === '/ofertas' ? 'bg-gag-blue' : 'hover:bg-gag-cyan/10'}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Ofertas
-            </Link>
-            
-            {/* User management links */}
-            <div className="border-t border-gag-cyan/10 my-2 pt-2">
-              {isUserAuthenticated ? (
-                <Link
-                  to="/perfil"
-                  className="flex items-center text-gag-white py-2 px-3 rounded hover:bg-gag-cyan/10"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  {user?.name || user?.email?.split('@')[0]}
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    to="/auth"
-                    className="flex items-center text-gag-white py-2 px-3 rounded hover:bg-gag-cyan/10"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Entrar como Cliente
-                  </Link>
-                  <Link
-                    to="/colaborador/login"
-                    className="flex items-center text-gag-lime py-2 px-3 rounded hover:bg-gag-lime/10"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Área do Colaborador
-                  </Link>
-                  <Link
-                    to="/admin/login"
-                    className="flex items-center text-gag-cyan py-2 px-3 rounded hover:bg-gag-cyan/10"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Área do Admin
-                  </Link>
-                </>
-              )}
-              
-              {/* Admin/Collaborator specific links */}
-              {isCollaboratorAuthenticated && (
-                <Link
-                  to="/colaborador"
-                  className="flex items-center text-gag-lime py-2 px-3 rounded hover:bg-gag-lime/10"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Painel do Colaborador
-                </Link>
-              )}
-              
-              {isSellerAuthenticated && (
-                <Link
-                  to="/admin-produtos"
-                  className="flex items-center text-gag-cyan py-2 px-3 rounded hover:bg-gag-cyan/10"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Painel Administrativo
-                </Link>
-              )}
-              
-              <Link
-                to="/carrinho"
-                className="flex items-center text-gag-white py-2 px-3 rounded hover:bg-gag-blue/20 bg-gag-blue/10 mt-2"
+      {/* Mobile Navigation Drawer */}
+      {isMobile && (
+        <div 
+          className={`fixed inset-0 bg-black/90 z-40 transform transition-transform duration-300 ease-in-out ${
+            isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+          style={{ top: '64px' }}
+        >
+          <nav className="flex flex-col p-4 h-full">
+            {navItems.map((item) => (
+              <Link 
+                key={item.path} 
+                to={item.path}
                 onClick={() => setIsMenuOpen(false)}
+                className={`flex items-center px-4 py-3 text-base font-medium rounded-md mb-2 ${
+                  isActive(item.path)
+                    ? 'bg-gag-blue/20 text-gag-cyan' 
+                    : 'text-gray-300 hover:bg-gag-dark/30 hover:text-gag-white'
+                }`}
               >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Carrinho
-                {totalItems > 0 && (
-                  <span className="ml-2 bg-gag-lime text-gag-dark text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                    {totalItems}
-                  </span>
-                )}
+                <span className="mr-3">{item.icon}</span>
+                <span>{item.label}</span>
               </Link>
+            ))}
+            
+            <div className="border-t border-gag-cyan/20 my-4 pt-4">
+              {accountMenuItems.map((item, index) => (
+                item.path ? (
+                  <Link 
+                    key={index} 
+                    to={item.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-base font-medium text-gray-300 hover:bg-gag-dark/30 hover:text-gag-white rounded-md mb-2"
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                ) : (
+                  <button 
+                    key={index}
+                    onClick={() => {
+                      item.onClick?.();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-3 text-base font-medium text-gray-300 hover:bg-gag-dark/30 hover:text-gag-white rounded-md mb-2"
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </button>
+                )
+              ))}
             </div>
           </nav>
         </div>
