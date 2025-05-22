@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
@@ -113,6 +112,7 @@ const ProductCard = ({ product }: { product: Product }) => {
 const ProductShowcase = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { addItem } = useCart();
   
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['products'],

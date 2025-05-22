@@ -17,14 +17,14 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
   const location = useLocation();
-  const { cartItems, getTotalItems } = useCart();
+  const { items, getTotalItems } = useCart();
   const { user, isAuthenticated, logout } = useUserAuth();
   const { collaborator, isAuthenticated: isCollaboratorAuthenticated } = useCollaboratorAuth();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
