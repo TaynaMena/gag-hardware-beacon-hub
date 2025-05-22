@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { User, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export interface AccountMenuItem {

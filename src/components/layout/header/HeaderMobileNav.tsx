@@ -3,9 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAllCategories } from '@/services/categoryService';
-import { Home, Package, Tag, User, LogIn, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { AccountMenuItem } from '@/components/header/HeaderUserMenu';
+import { Home, Package, Tag, User, LogIn } from 'lucide-react';
+import { AccountMenuItem } from './HeaderUserMenu';
 
 interface HeaderMobileNavProps {
   isMenuOpen: boolean;

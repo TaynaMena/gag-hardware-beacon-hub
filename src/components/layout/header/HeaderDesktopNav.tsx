@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAllCategories } from '@/services/categoryService';
-import { Home, Package, Tag, ShoppingBag, ChevronDown } from 'lucide-react';
+import { Home, Package, Tag, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,

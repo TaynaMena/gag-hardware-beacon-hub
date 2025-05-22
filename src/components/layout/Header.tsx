@@ -10,7 +10,7 @@ import HeaderDesktopNav from './header/HeaderDesktopNav';
 import HeaderMobileNav from './header/HeaderMobileNav';
 import HeaderUserMenu from './header/HeaderUserMenu';
 import CartButton from './header/CartButton';
-import { AccountMenuItem } from '@/components/header/HeaderUserMenu';
+import { AccountMenuItem } from '@/components/layout/header/HeaderUserMenu';
 
 const Header = () => {
   const location = useLocation();
