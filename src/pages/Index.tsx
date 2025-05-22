@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
-import Header from '@/components/Header';
+import Layout from '@/components/Layout';
+import Header from '@/components/layout/Header';
 import HardwareList from '@/components/HardwareList';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, Cpu, Monitor, Headphones, Keyboard, Mouse, HardDrive } from 'lucide-react';
